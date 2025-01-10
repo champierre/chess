@@ -90,7 +90,7 @@ describe('ゲームタイプアイコンのテスト', () => {
     await user.click(fetchButton)
 
     // Bulletゲームのアイコンを確認
-    const bulletIcon = await screen.findByTitle('Bullet')
+    const bulletIcon = await screen.findByTestId('bullet-icon')
     expect(bulletIcon).toBeInTheDocument()
     expect(bulletIcon).toHaveClass('text-yellow-500')
 
