@@ -4,9 +4,21 @@ import * as Toast from '@radix-ui/react-toast';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowsUpDown } from '@fortawesome/free-solid-svg-icons';
 
+type ChessBoard = {
+  position: (fen: string) => void;
+  destroy: () => void;
+  flip: () => void;
+};
+
 declare global {
   interface Window {
-    Chessboard: any;
+    Chessboard: (
+      element: HTMLDivElement,
+      config: {
+        position: string;
+        pieceTheme: string;
+      }
+    ) => ChessBoard;
   }
 }
 
@@ -21,15 +33,44 @@ interface ChessMove {
   san: string;
 }
 
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination"
+
+interface Game {
+  date: string;
+  white: string;
+  black: string;
+  pgn: string;
+}
+
 function App() {
   const [username, setUsername] = useState('');
   const [pgn, setPgn] = useState('');
   const [currentMove, setCurrentMove] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error', message: string } | null>(null);
   const [isFlipped, setIsFlipped] = useState(false);
-  const boardRef = useRef<any>(null);
-  const gameRef = useRef<any>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [games, setGames] = useState<Game[]>([]);
+  const boardRef = useRef<ChessBoard | null>(null);
+  const gameRef = useRef<Chess | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
+  // Ensure refs are mutable
+  const mutableBoardRef = boardRef as React.MutableRefObject<ChessBoard | null>;
+  const mutableGameRef = gameRef as React.MutableRefObject<Chess | null>;
+  
+  const itemsPerPage = 10;
+  const totalPages = Math.ceil(games.length / itemsPerPage);
+  const paginatedGames = games.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   // Load saved username from localStorage
   useEffect(() => {
@@ -45,20 +86,19 @@ function App() {
 
   useEffect(() => {
     if (containerRef.current) {
-      boardRef.current = window.Chessboard(containerRef.current, {
+      mutableBoardRef.current = window.Chessboard(containerRef.current, {
         position: 'start',
         pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'
       });
     }
 
     return () => {
-      if (boardRef.current) {
-        boardRef.current.destroy();
+      if (mutableBoardRef.current) {
+        mutableBoardRef.current.destroy();
       }
     };
-  }, []);
+  }, [mutableBoardRef]);
 
-  const [games, setGames] = useState<Array<{date: string, white: string, black: string, pgn: string}>>([]);
   const [loading, setLoading] = useState(false);
 
   const fetchGames = async () => {
@@ -85,14 +125,19 @@ function App() {
         console.error('Failed to save username to localStorage:', error);
       }
 
-      // Sort archives in reverse chronological order and take the most recent ones
+      // Sort archives in reverse chronological order
       const sortedArchives = archivesData.archives.sort().reverse();
-      const recentArchives = sortedArchives.slice(0, 2); // Take 2 months to ensure we get at least 10 games
-
-      // Fetch PGN data from recent archives
-      const allGames: Array<{date: string, white: string, black: string, pgn: string}> = [];
+      const allGames: Game[] = [];
       
-      for (const archiveUrl of recentArchives) {
+      console.log(`Found ${sortedArchives.length} archives to process`);
+      
+      // Process archives until we have 100 games or run out of archives
+      for (const archiveUrl of sortedArchives) {
+        if (allGames.length >= 100) {
+          console.log('Reached 100 games limit, stopping archive processing');
+          break;
+        }
+        
         const pgnResponse = await fetch(`${archiveUrl}/pgn`);
         const pgnText = await pgnResponse.text();
         
@@ -100,9 +145,16 @@ function App() {
         const games = pgnText.split('\n\n[').map((game, index) => 
           index === 0 ? game : '[' + game
         ).filter(game => game.trim());
+        
+        console.log(`Found ${games.length} games in archive ${archiveUrl}`);
 
         // Parse each game's metadata
         for (const gamePgn of games) {
+          if (allGames.length >= 100) {
+            console.log(`Reached 100 games limit while processing archive ${archiveUrl}`);
+            break;
+          }
+          
           const dateMatch = gamePgn.match(/\[Date "([^"]+)"/);
           const whiteMatch = gamePgn.match(/\[White "([^"]+)"/);
           const blackMatch = gamePgn.match(/\[Black "([^"]+)"/);
@@ -118,9 +170,16 @@ function App() {
         }
       }
 
-      // Take the 10 most recent games
-      setGames(allGames.slice(0, 10));
-      setFeedback({ type: 'success', message: '対局データを取得しました' });
+      console.log(`Total games collected before sorting: ${allGames.length}`);
+      
+      // Sort games by date in reverse chronological order and take up to 100
+      const sortedGames = allGames.sort((a, b) => {
+        return new Date(b.date).getTime() - new Date(a.date).getTime();
+      });
+      
+      setGames(sortedGames);
+      setCurrentPage(1); // Reset to first page when new games are fetched
+      setFeedback({ type: 'success', message: `${sortedGames.length}件の対局データを取得しました` });
     } catch (error) {
       console.error('Error fetching games:', error);
       setFeedback({ type: 'error', message: '対局データの取得に失敗しました' });
@@ -133,9 +192,11 @@ function App() {
     try {
       const game = new Chess();
       game.loadPgn(selectedPgn || pgn);
-      gameRef.current = game;
+      mutableGameRef.current = game;
       setCurrentMove(0);
-      boardRef.current.position('start');
+      if (mutableBoardRef.current) {
+        mutableBoardRef.current.position('start');
+      }
       setFeedback({ type: 'success', message: '棋譜を読み込みました' });
     } catch (error) {
       console.error('Invalid PGN:', error);
@@ -144,21 +205,21 @@ function App() {
   };
 
   const nextMove = () => {
-    if (gameRef.current && currentMove < gameRef.current.history().length) {
-      const moves = gameRef.current.history({ verbose: true }) as ChessMove[];
+    if (mutableGameRef.current && currentMove < mutableGameRef.current.history().length && mutableBoardRef.current) {
+      const moves = mutableGameRef.current.history({ verbose: true }) as ChessMove[];
       const move = moves[currentMove];
       if (move) {
-        boardRef.current.position(move.after);
+        mutableBoardRef.current.position(move.after);
         setCurrentMove(prev => prev + 1);
       }
     }
   };
 
   const prevMove = () => {
-    if (gameRef.current && currentMove > 0) {
-      const moves = gameRef.current.history({ verbose: true }) as ChessMove[];
+    if (mutableGameRef.current && currentMove > 0 && mutableBoardRef.current) {
+      const moves = mutableGameRef.current.history({ verbose: true }) as ChessMove[];
       const move = moves[currentMove - 2];
-      boardRef.current.position(move ? move.after : 'start');
+      mutableBoardRef.current.position(move ? move.after : 'start');
       setCurrentMove(prev => prev - 1);
     }
   };
@@ -195,7 +256,7 @@ function App() {
               <div className="mb-4">
                 <h2 className="text-lg font-semibold mb-2">最近の対局</h2>
                 <div className="border rounded divide-y">
-                  {games.map((game, index) => (
+                  {paginatedGames.map((game, index) => (
                     <button
                       key={index}
                       onClick={() => loadPGN(game.pgn)}
@@ -208,6 +269,41 @@ function App() {
                     </button>
                   ))}
                 </div>
+                {totalPages > 1 && (
+                  <Pagination className="mt-4">
+                    <PaginationContent>
+                      <PaginationItem>
+                        <PaginationPrevious
+                          onClick={() => setCurrentPage((prev: number) => Math.max(1, prev - 1))}
+                          className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
+                          aria-label="前のページへ"
+                        >
+                          前へ
+                        </PaginationPrevious>
+                      </PaginationItem>
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                        <PaginationItem key={page}>
+                          <PaginationLink
+                            onClick={() => setCurrentPage(page)}
+                            isActive={currentPage === page}
+                            aria-label={`${page}ページ目へ`}
+                          >
+                            {page}
+                          </PaginationLink>
+                        </PaginationItem>
+                      ))}
+                      <PaginationItem>
+                        <PaginationNext
+                          onClick={() => setCurrentPage((prev: number) => Math.min(totalPages, prev + 1))}
+                          className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}
+                          aria-label="次のページへ"
+                        >
+                          次へ
+                        </PaginationNext>
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
+                )}
               </div>
             ) : (
               <>
@@ -244,8 +340,8 @@ function App() {
               </button>
               <button
                 onClick={() => {
-                  if (boardRef.current) {
-                    boardRef.current.flip();
+                  if (mutableBoardRef.current) {
+                    mutableBoardRef.current.flip();
                     setIsFlipped(!isFlipped);
                   }
                 }}
