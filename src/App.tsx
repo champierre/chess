@@ -22,6 +22,7 @@ interface ChessMove {
 }
 
 function App() {
+  const [username, setUsername] = useState('');
   const [pgn, setPgn] = useState('');
   const [currentMove, setCurrentMove] = useState(0);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error', message: string } | null>(null);
@@ -45,10 +46,74 @@ function App() {
     };
   }, []);
 
-  const loadPGN = () => {
+  const [games, setGames] = useState<Array<{date: string, white: string, black: string, pgn: string}>>([]);
+  const [loading, setLoading] = useState(false);
+
+  const fetchGames = async () => {
+    if (!username) {
+      setFeedback({ type: 'error', message: 'ユーザー名を入力してください' });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // Get archives first
+      const archivesResponse = await fetch(`https://api.chess.com/pub/player/${username}/games/archives`);
+      const archivesData = await archivesResponse.json();
+      
+      if (!archivesData.archives || archivesData.archives.length === 0) {
+        setFeedback({ type: 'error', message: '対局データが見つかりませんでした' });
+        return;
+      }
+
+      // Sort archives in reverse chronological order and take the most recent ones
+      const sortedArchives = archivesData.archives.sort().reverse();
+      const recentArchives = sortedArchives.slice(0, 2); // Take 2 months to ensure we get at least 10 games
+
+      // Fetch PGN data from recent archives
+      const allGames: Array<{date: string, white: string, black: string, pgn: string}> = [];
+      
+      for (const archiveUrl of recentArchives) {
+        const pgnResponse = await fetch(`${archiveUrl}/pgn`);
+        const pgnText = await pgnResponse.text();
+        
+        // Split PGN text into individual games
+        const games = pgnText.split('\n\n[').map((game, index) => 
+          index === 0 ? game : '[' + game
+        ).filter(game => game.trim());
+
+        // Parse each game's metadata
+        for (const gamePgn of games) {
+          const dateMatch = gamePgn.match(/\[Date "([^"]+)"/);
+          const whiteMatch = gamePgn.match(/\[White "([^"]+)"/);
+          const blackMatch = gamePgn.match(/\[Black "([^"]+)"/);
+
+          if (dateMatch && whiteMatch && blackMatch) {
+            allGames.push({
+              date: dateMatch[1],
+              white: whiteMatch[1],
+              black: blackMatch[1],
+              pgn: gamePgn
+            });
+          }
+        }
+      }
+
+      // Take the 10 most recent games
+      setGames(allGames.slice(0, 10));
+      setFeedback({ type: 'success', message: '対局データを取得しました' });
+    } catch (error) {
+      console.error('Error fetching games:', error);
+      setFeedback({ type: 'error', message: '対局データの取得に失敗しました' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadPGN = (selectedPgn?: string) => {
     try {
       const game = new Chess();
-      game.loadPgn(pgn);
+      game.loadPgn(selectedPgn || pgn);
       gameRef.current = game;
       setCurrentMove(0);
       boardRef.current.position('start');
@@ -85,18 +150,62 @@ function App() {
         <h1 className="text-2xl font-bold mb-4">チェス棋譜ビューワー</h1>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <textarea
-              value={pgn}
-              onChange={(e) => setPgn(e.target.value)}
-              placeholder="ここにPGNをペーストしてください..."
-              className="w-full h-64 mb-4 p-2 border rounded"
-            />
-            <button 
-              onClick={loadPGN} 
-              className="w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
-            >
-              棋譜を読み込む
-            </button>
+            <div className="mb-4">
+              <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
+                Chess.com ユーザー名
+              </label>
+              <div className="flex gap-2">
+                <input
+                  id="username"
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="例: jishiha"
+                  className="flex-1 p-2 border rounded"
+                />
+                <button
+                  onClick={fetchGames}
+                  disabled={loading}
+                  className={`px-4 py-2 rounded text-white ${loading ? 'bg-gray-400' : 'bg-blue-500 hover:bg-blue-600'}`}
+                >
+                  {loading ? '取得中...' : '取得'}
+                </button>
+              </div>
+            </div>
+            {games.length > 0 ? (
+              <div className="mb-4">
+                <h2 className="text-lg font-semibold mb-2">最近の対局</h2>
+                <div className="border rounded divide-y">
+                  {games.map((game, index) => (
+                    <button
+                      key={index}
+                      onClick={() => loadPGN(game.pgn)}
+                      className="w-full px-4 py-2 text-left hover:bg-gray-50 flex flex-col"
+                    >
+                      <span className="font-medium">{game.date}</span>
+                      <span className="text-gray-600">
+                        {game.white} vs {game.black}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <>
+                <textarea
+                  value={pgn}
+                  onChange={(e) => setPgn(e.target.value)}
+                  placeholder="ここにPGNをペーストしてください..."
+                  className="w-full h-64 mb-4 p-2 border rounded"
+                />
+                <button 
+                  onClick={() => loadPGN()} 
+                  className="w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
+                >
+                  棋譜を読み込む
+                </button>
+              </>
+            )}
           </div>
           
           <div>
