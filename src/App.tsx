@@ -267,7 +267,7 @@ function App() {
                     >
                       <span className="font-medium">{game.date}</span>
                       <span className="text-gray-600">
-                        {game.white}{game.result === "1-0" ? " 👑" : game.result === "1/2-1/2" ? " 🤝" : ""} vs {game.black}{game.result === "0-1" ? " 👑" : game.result === "1/2-1/2" ? " 🤝" : ""}
+                        {game.white}{game.result === "1-0" ? " 👑" : game.result === "1/2-1/2" ? " ⭕" : ""} vs {game.black}{game.result === "0-1" ? " 👑" : game.result === "1/2-1/2" ? " ⭕" : ""}
                       </span>
                     </button>
                   ))}
