@@ -19,8 +19,8 @@
 
 ```bash
 # リポジトリのクローン
-git clone https://github.com/champierre/devin.git
-cd devin/chess-viewer
+git clone https://github.com/champierre/chess.git
+cd chess
 
 # 依存パッケージのインストール
 npm install
@@ -36,13 +36,6 @@ npm run dev
 - [chessboard.js](https://chessboardjs.com/)
 - [chess.js](https://github.com/jhlywa/chess.js)
 - [Tailwind CSS](https://tailwindcss.com/)
-
-## デプロイ
-
-GitHub Actionsを使用して、mainブランチへのプッシュ時に自動的にGitHub Pagesへデプロイされます。
-
-デプロイされたアプリケーションは以下のURLでアクセスできます：
-https://champierre.github.io/devin/
 
 ## ライセンス
 
