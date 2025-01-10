@@ -19,37 +19,37 @@ vi.stubGlobal('Chessboard', mockChessboard)
 // モックゲームデータ
 const mockGames = [
   {
-    date: '2024.01.01',
+    date: '2025.01.07',
     white: 'Player1',
     black: 'Player2',
-    pgn: '[Event "Chess.com Game"]\n[Date "2024.01.01"]\n[White "Player1"]\n[Black "Player2"]\n[Result "1-0"]\n[TimeControl "180"]\n\n1. e4 e5 *',
+    pgn: '[Event "Chess.com Game"]\n[Date "2025.01.07"]\n[White "Player1"]\n[Black "Player2"]\n[Result "1-0"]\n[TimeControl "180"]\n\n1. e4 e5 *',
     result: '1-0',
     timeControl: '180',
     gameType: 'Bullet'
   },
   {
-    date: '2024.01.02',
+    date: '2025.01.08',
     white: 'Player3',
     black: 'Player4',
-    pgn: '[Event "Chess.com Game"]\n[Date "2024.01.02"]\n[White "Player3"]\n[Black "Player4"]\n[Result "0-1"]\n[TimeControl "600"]\n\n1. d4 d5 *',
+    pgn: '[Event "Chess.com Game"]\n[Date "2025.01.08"]\n[White "Player3"]\n[Black "Player4"]\n[Result "0-1"]\n[TimeControl "600"]\n\n1. d4 d5 *',
     result: '0-1',
     timeControl: '600',
     gameType: 'Blitz'
   },
   {
-    date: '2024.01.03',
+    date: '2025.01.09',
     white: 'Player5',
     black: 'Player6',
-    pgn: '[Event "Chess.com Game"]\n[Date "2024.01.03"]\n[White "Player5"]\n[Black "Player6"]\n[Result "1-0"]\n[TimeControl "1800"]\n\n1. e4 e5 *',
+    pgn: '[Event "Chess.com Game"]\n[Date "2025.01.09"]\n[White "Player5"]\n[Black "Player6"]\n[Result "1-0"]\n[TimeControl "1800"]\n\n1. e4 e5 *',
     result: '1-0',
     timeControl: '1800',
     gameType: 'Rapid'
   },
   {
-    date: '2024.01.04',
+    date: '2025.01.10',
     white: 'Player7',
     black: 'Player8',
-    pgn: '[Event "Chess.com Game"]\n[Date "2024.01.04"]\n[White "Player7"]\n[Black "Player8"]\n[Result "0-1"]\n[TimeControl "1/172800"]\n\n1. d4 d5 *',
+    pgn: '[Event "Chess.com Game"]\n[Date "2025.01.10"]\n[White "Player7"]\n[Black "Player8"]\n[Result "0-1"]\n[TimeControl "1/172800"]\n\n1. d4 d5 *',
     result: '0-1',
     timeControl: '1/172800',
     gameType: 'Daily'
@@ -128,7 +128,7 @@ describe('ゲームタイプアイコンのテスト', () => {
     expect(dailyIcon).toHaveClass('text-orange-500')
 
     // ゲームを選択してゲームタイプ情報を確認
-    const firstGame = await screen.findByText('2024.01.01')
+    const firstGame = await screen.findByText('2025.01.07')
     const firstGameButton = firstGame.closest('button')
     await user.click(firstGameButton!)
 
@@ -151,7 +151,7 @@ describe('ゲームタイプアイコンのテスト', () => {
     await user.click(fetchButton)
 
     // 全ゲームが描画されているかを確認（モックデータは4件）
-    const initialGames = await screen.findAllByRole('button', { name: /2024/ })
+    const initialGames = await screen.findAllByRole('button', { name: /2025/ })
     expect(initialGames).toHaveLength(4)
 
     // Bulletアイコンをクリック
@@ -159,21 +159,21 @@ describe('ゲームタイプアイコンのテスト', () => {
     await user.click(bulletIcon)
 
     // Bulletのみが表示されているか確認（モックデータでは1件）
-    const bulletGames = screen.getAllByRole('button', { name: /2024/ })
+    const bulletGames = screen.getAllByRole('button', { name: /2025/ })
     expect(bulletGames).toHaveLength(1)
-    expect(bulletGames[0]).toHaveTextContent('2024.01.01')
+    expect(bulletGames[0]).toHaveTextContent('2025.01.07')
 
     // 再度クリックでフィルタ解除
     await user.click(bulletIcon)
-    const resetGames = screen.getAllByRole('button', { name: /2024/ })
+    const resetGames = screen.getAllByRole('button', { name: /2025/ })
     expect(resetGames).toHaveLength(4)
 
     // 他のゲームタイプでも確認
     const blitzIcon = screen.getByTestId('filter-blitz-icon')
     await user.click(blitzIcon)
-    const blitzGames = screen.getAllByRole('button', { name: /2024/ })
+    const blitzGames = screen.getAllByRole('button', { name: /2025/ })
     expect(blitzGames).toHaveLength(1)
-    expect(blitzGames[0]).toHaveTextContent('2024.01.02')
+    expect(blitzGames[0]).toHaveTextContent('2025.01.08')
   })
 })
 
@@ -212,7 +212,7 @@ describe('ゲーム選択と情報表示のテスト', () => {
     await user.click(fetchButton)
 
     // 最初のゲームを選択
-    const firstGame = await screen.findByText('2024.01.01')
+    const firstGame = await screen.findByText('2025.01.07')
     const firstGameButton = firstGame.closest('button')
     expect(firstGameButton).toBeDefined()
     
@@ -225,7 +225,7 @@ describe('ゲーム選択と情報表示のテスト', () => {
     const gameInfo = screen.getByText('選択された対局情報')
     expect(gameInfo).toBeInTheDocument()
 
-    const dateInfo = screen.getByText('日付: 2024.01.01')
+    const dateInfo = screen.getByText('日付: 2025.01.07')
     expect(dateInfo).toBeInTheDocument()
 
     const resultInfo = screen.getByText('結果: 1-0')
