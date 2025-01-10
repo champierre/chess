@@ -23,6 +23,7 @@ function App() {
   const [pgn, setPgn] = useState('');
   const [currentMove, setCurrentMove] = useState(0);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error', message: string } | null>(null);
+  const [isFlipped, setIsFlipped] = useState(false);
   const boardRef = useRef<any>(null);
   const gameRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -110,6 +111,17 @@ function App() {
                 className="bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600"
               >
                 次の手
+              </button>
+              <button
+                onClick={() => {
+                  if (boardRef.current) {
+                    boardRef.current.flip();
+                    setIsFlipped(!isFlipped);
+                  }
+                }}
+                className="bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600"
+              >
+                盤の上下反転
               </button>
             </div>
           </div>
