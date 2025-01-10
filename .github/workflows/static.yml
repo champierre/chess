@@ -43,10 +43,9 @@ jobs:
           node-version: '20'
           cache: 'npm'
       - name: Install dependencies
-        run: npm install
-
-      - name: Prepare build directories
-        run: mkdir -p node_modules/.tmp
+        run: |
+          npm ci
+          mkdir -p node_modules/.tmp
 
       - name: Build
         run: npm run build
