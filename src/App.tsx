@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Chess } from 'chess.js';
 import * as Toast from '@radix-ui/react-toast';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowsUpDown, faCheck, faXmark, faEquals } from '@fortawesome/free-solid-svg-icons';
+import { faArrowsUpDown, faCheck, faXmark, faEquals, faBolt, faClock, faStopwatch, faCalendar } from '@fortawesome/free-solid-svg-icons';
 
 type ChessBoard = {
   position: (fen: string) => void;
@@ -48,6 +48,39 @@ interface Game {
   black: string;
   pgn: string;
   result: string;
+  timeControl?: string;  // Raw PGN TimeControl value
+  gameType?: 'Bullet' | 'Blitz' | 'Rapid' | 'Daily';  // Derived game type
+}
+
+function getGameTypeIcon(gameType: 'Bullet' | 'Blitz' | 'Rapid' | 'Daily'): JSX.Element {
+  switch (gameType) {
+    case 'Bullet':
+      return <FontAwesomeIcon icon={faBolt} className="text-yellow-500" title="Bullet" />;
+    case 'Blitz':
+      return <FontAwesomeIcon icon={faClock} className="text-blue-500" title="Blitz" />;
+    case 'Rapid':
+      return <FontAwesomeIcon icon={faStopwatch} className="text-green-500" title="Rapid" />;
+    case 'Daily':
+      return <FontAwesomeIcon icon={faCalendar} className="text-purple-500" title="Daily" />;
+  }
+}
+
+function deriveGameType(timeControl: string | undefined): 'Bullet' | 'Blitz' | 'Rapid' | 'Daily' {
+  if (!timeControl) return 'Rapid'; // Default to Rapid if no time control specified
+  
+  // Check if it's a daily game (contains fraction)
+  if (timeControl.includes('/')) {
+    return 'Daily';
+  }
+
+  // Parse the base time in seconds
+  const seconds = parseInt(timeControl.split('|')[0], 10);
+  
+  // Classify based on time thresholds
+  if (seconds <= 180) return 'Bullet';      // 3 minutes or less
+  if (seconds <= 600) return 'Blitz';       // 10 minutes or less
+  if (seconds < 3600) return 'Rapid';       // Less than 60 minutes
+  return 'Daily';                           // 60 minutes or more
 }
 
 function getResultIcon(game: Game, currentUser: string) {
@@ -176,6 +209,7 @@ function App() {
           const whiteMatch = gamePgn.match(/\[White "([^"]+)"/);
           const blackMatch = gamePgn.match(/\[Black "([^"]+)"/);
           const resultMatch = gamePgn.match(/\[Result "([^"]+)"/);
+          const timeControlMatch = gamePgn.match(/\[TimeControl "([^"]+)"/);
 
           if (dateMatch && whiteMatch && blackMatch && resultMatch) {
             allGames.push({
@@ -183,7 +217,9 @@ function App() {
               white: whiteMatch[1],
               black: blackMatch[1],
               pgn: gamePgn,
-              result: resultMatch[1]
+              result: resultMatch[1],
+              timeControl: timeControlMatch ? timeControlMatch[1] : undefined,
+              gameType: deriveGameType(timeControlMatch ? timeControlMatch[1] : undefined)
             });
           }
         }
@@ -286,7 +322,12 @@ function App() {
                         selectedGame === game ? "bg-blue-100" : "hover:bg-gray-50"
                       }`}
                     >
-                      <span className="font-medium">{game.date} {getResultIcon(game, username)}</span>
+                      <span className="font-medium">
+                        {game.date} {getResultIcon(game, username)}
+                        {game.gameType && (
+                          <span className="ml-2">{getGameTypeIcon(game.gameType)}</span>
+                        )}
+                      </span>
                       <span className="text-gray-600">
                         {game.white} vs {game.black}
                       </span>
@@ -354,6 +395,9 @@ function App() {
                 <p>日付: {selectedGame.date}</p>
                 <p>結果: {selectedGame.result}</p>
                 <p>白: {selectedGame.white}, 黒: {selectedGame.black}</p>
+                {selectedGame.gameType && (
+                  <p>ゲームタイプ: {selectedGame.gameType} <span className="ml-2">{getGameTypeIcon(selectedGame.gameType)}</span></p>
+                )}
               </div>
             )}
             <div ref={containerRef} className="mb-4" />
