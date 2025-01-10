@@ -31,6 +31,18 @@ function App() {
   const gameRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // Load saved username from localStorage
+  useEffect(() => {
+    try {
+      const savedUsername = localStorage.getItem('chessUsername');
+      if (savedUsername) {
+        setUsername(savedUsername);
+      }
+    } catch (error) {
+      console.error('Failed to load username from localStorage:', error);
+    }
+  }, []);
+
   useEffect(() => {
     if (containerRef.current) {
       boardRef.current = window.Chessboard(containerRef.current, {
@@ -64,6 +76,13 @@ function App() {
       if (!archivesData.archives || archivesData.archives.length === 0) {
         setFeedback({ type: 'error', message: '対局データが見つかりませんでした' });
         return;
+      }
+
+      // Save username to localStorage on successful API response
+      try {
+        localStorage.setItem('chessUsername', username);
+      } catch (error) {
+        console.error('Failed to save username to localStorage:', error);
       }
 
       // Sort archives in reverse chronological order and take the most recent ones
