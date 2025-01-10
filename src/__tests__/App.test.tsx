@@ -22,15 +22,37 @@ const mockGames = [
     date: '2024.01.01',
     white: 'Player1',
     black: 'Player2',
-    pgn: '[Event "Chess.com Game"]\n[Date "2024.01.01"]\n[White "Player1"]\n[Black "Player2"]\n[Result "1-0"]\n1. e4 e5 1-0',
-    result: '1-0'
+    pgn: '[Event "Chess.com Game"]\n[Date "2024.01.01"]\n[White "Player1"]\n[Black "Player2"]\n[Result "1-0"]\n[TimeControl "180"]\n1. e4 e5 1-0',
+    result: '1-0',
+    timeControl: '180',
+    gameType: 'Bullet'
   },
   {
     date: '2024.01.02',
     white: 'Player3',
     black: 'Player4',
-    pgn: '[Event "Chess.com Game"]\n[Date "2024.01.02"]\n[White "Player3"]\n[Black "Player4"]\n[Result "0-1"]\n1. d4 d5 0-1',
-    result: '0-1'
+    pgn: '[Event "Chess.com Game"]\n[Date "2024.01.02"]\n[White "Player3"]\n[Black "Player4"]\n[Result "0-1"]\n[TimeControl "600"]\n1. d4 d5 0-1',
+    result: '0-1',
+    timeControl: '600',
+    gameType: 'Blitz'
+  },
+  {
+    date: '2024.01.03',
+    white: 'Player5',
+    black: 'Player6',
+    pgn: '[Event "Chess.com Game"]\n[Date "2024.01.03"]\n[White "Player5"]\n[Black "Player6"]\n[Result "1-0"]\n[TimeControl "1800"]\n1. e4 e5 1-0',
+    result: '1-0',
+    timeControl: '1800',
+    gameType: 'Rapid'
+  },
+  {
+    date: '2024.01.04',
+    white: 'Player7',
+    black: 'Player8',
+    pgn: '[Event "Chess.com Game"]\n[Date "2024.01.04"]\n[White "Player7"]\n[Black "Player8"]\n[Result "0-1"]\n[TimeControl "1/172800"]\n1. d4 d5 0-1',
+    result: '0-1',
+    timeControl: '1/172800',
+    gameType: 'Daily'
   }
 ]
 
@@ -48,6 +70,73 @@ describe('チェス盤のテスト', () => {
 
     // flip が呼ばれたことを確認
     expect(mockFlip).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('ゲームタイプアイコンのテスト', () => {
+  beforeEach(() => {
+    // APIレスポンスをモック
+    vi.spyOn(global, 'fetch').mockImplementation((input: RequestInfo | URL, _init?: RequestInit) => {
+      const url = typeof input === 'string' ? input : input.toString()
+      if (url.includes('/archives')) {
+        return Promise.resolve({
+          json: () => Promise.resolve({ archives: ['https://api.chess.com/pub/player/test/games/2024/01'] })
+        } as Response)
+      }
+      if (url.includes('/pgn')) {
+        return Promise.resolve({
+          text: () => Promise.resolve(mockGames.map(game => game.pgn).join('\n\n'))
+        } as Response)
+      }
+      return Promise.reject(new Error('Not found'))
+    })
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it('ゲームタイプに応じたアイコンが表示されることを確認', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    // ユーザー名を入力してゲームを取得
+    const usernameInput = screen.getByPlaceholderText('例: jishiha')
+    await user.type(usernameInput, 'testuser')
+    
+    const fetchButton = screen.getByRole('button', { name: '取得' })
+    await user.click(fetchButton)
+
+    // Bulletゲームのアイコンを確認
+    const bulletIcon = await screen.findByTestId('bullet-icon')
+    expect(bulletIcon).toBeInTheDocument()
+    expect(bulletIcon).toHaveClass('text-amber-800')
+
+    // Blitzゲームのアイコンを確認
+    const blitzIcon = await screen.findByTestId('blitz-icon')
+    expect(blitzIcon).toBeInTheDocument()
+    expect(blitzIcon).toHaveClass('text-yellow-500')
+
+    // Rapidゲームのアイコンを確認
+    const rapidIcon = await screen.findByTestId('rapid-icon')
+    expect(rapidIcon).toBeInTheDocument()
+    expect(rapidIcon).toHaveClass('text-green-500')
+
+    // Dailyゲームのアイコンを確認
+    const dailyIcon = await screen.findByTestId('daily-icon')
+    expect(dailyIcon).toBeInTheDocument()
+    expect(dailyIcon).toHaveClass('text-orange-500')
+
+    // ゲームを選択してゲームタイプ情報を確認
+    const firstGame = await screen.findByText('2024.01.01')
+    const firstGameButton = firstGame.closest('button')
+    await user.click(firstGameButton!)
+
+    // 選択されたゲーム情報にゲームタイプとアイコンが表示されることを確認
+    const gameTypeInfo = screen.getByText(/ゲームタイプ: Bullet/)
+    expect(gameTypeInfo).toBeInTheDocument()
+    const selectedGameIcon = screen.getAllByTestId('bullet-icon')[1] // 2つ目のBulletアイコン（詳細表示）
+    expect(selectedGameIcon).toBeInTheDocument()
   })
 })
 
