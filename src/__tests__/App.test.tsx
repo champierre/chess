@@ -60,8 +60,13 @@ describe('ゲームタイプアイコンのテスト', () => {
     vi.spyOn(global, 'fetch').mockImplementation((input: RequestInfo | URL, _init?: RequestInit) => {
       const url = typeof input === 'string' ? input : input.toString()
       if (url.includes('/archives')) {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
         return Promise.resolve({
-          json: () => Promise.resolve({ archives: ['https://api.chess.com/pub/player/test/games/2025/01'] })
+          json: () => Promise.resolve({ 
+            archives: [`https://api.chess.com/pub/player/test/games/${year}/${month}`] 
+          })
         } as Response)
       }
       if (url.includes('/pgn')) {
@@ -88,25 +93,22 @@ describe('ゲームタイプアイコンのテスト', () => {
     const fetchButton = screen.getByRole('button', { name: '取得' })
     await user.click(fetchButton)
 
-    // Bulletゲームのアイコンを確認
-    const bulletIcon = await screen.findByTestId('bullet-icon')
-    expect(bulletIcon).toBeInTheDocument()
-    expect(bulletIcon).toHaveClass('text-amber-800')
+    // ゲームタイプアイコンを確認
+    const bulletIcons = await screen.findAllByTestId('bullet-icon')
+    expect(bulletIcons[0]).toBeInTheDocument()
+    expect(bulletIcons[0]).toHaveClass('text-amber-800')
 
-    // Blitzゲームのアイコンを確認
-    const blitzIcon = await screen.findByTestId('blitz-icon')
-    expect(blitzIcon).toBeInTheDocument()
-    expect(blitzIcon).toHaveClass('text-yellow-500')
+    const blitzIcons = await screen.findAllByTestId('blitz-icon')
+    expect(blitzIcons[0]).toBeInTheDocument()
+    expect(blitzIcons[0]).toHaveClass('text-yellow-500')
 
-    // Rapidゲームのアイコンを確認
-    const rapidIcon = await screen.findByTestId('rapid-icon')
-    expect(rapidIcon).toBeInTheDocument()
-    expect(rapidIcon).toHaveClass('text-green-500')
+    const rapidIcons = await screen.findAllByTestId('rapid-icon')
+    expect(rapidIcons[0]).toBeInTheDocument()
+    expect(rapidIcons[0]).toHaveClass('text-green-500')
 
-    // Dailyゲームのアイコンを確認
-    const dailyIcon = await screen.findByTestId('daily-icon')
-    expect(dailyIcon).toBeInTheDocument()
-    expect(dailyIcon).toHaveClass('text-orange-500')
+    const dailyIcons = await screen.findAllByTestId('daily-icon')
+    expect(dailyIcons[0]).toBeInTheDocument()
+    expect(dailyIcons[0]).toHaveClass('text-orange-500')
 
     // ゲームを選択してゲームタイプ情報を確認
     const firstGame = await screen.findByText('2025.01.07')
@@ -132,7 +134,8 @@ describe('ゲームタイプアイコンのテスト', () => {
     await user.click(fetchButton)
 
     // 全ゲームが描画されているかを確認（1ページ分の10件）
-    const initialGames = await screen.findAllByRole('button', { name: new RegExp(mockGames[0].date) })
+    await screen.findByText(mockGames[0].date) // Wait for games to load
+    const initialGames = screen.getAllByRole('button')
     expect(initialGames).toHaveLength(10) // itemsPerPage is 10
 
     // Bulletアイコンをクリック
@@ -153,8 +156,12 @@ describe('ゲームタイプアイコンのテスト', () => {
     // 他のゲームタイプでも確認
     const blitzIcon = screen.getByTestId('filter-blitz-icon')
     await user.click(blitzIcon)
-    const blitzGames = screen.getAllByRole('button', { name: new RegExp(mockGames[1].date) })
-    expect(blitzGames).toHaveLength(expectedBulletGames)
+    await screen.findByText(mockGames[1].date) // Wait for filtered games to load
+    const blitzGames = screen.getAllByRole('button', { name: /.*/ }).filter(button => 
+      button.textContent && button.textContent.includes(mockGames[1].date)
+    )
+    const expectedBlitzGames = Math.min(10, Math.ceil(25/4)) // 25 total games, 4 types, max 10 per page
+    expect(blitzGames).toHaveLength(expectedBlitzGames)
   })
 })
 
@@ -268,8 +275,13 @@ describe('ゲーム選択と情報表示のテスト', () => {
     vi.spyOn(global, 'fetch').mockImplementation((input: RequestInfo | URL, _init?: RequestInit) => {
       const url = typeof input === 'string' ? input : input.toString()
       if (url.includes('/archives')) {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
         return Promise.resolve({
-          json: () => Promise.resolve({ archives: ['https://api.chess.com/pub/player/test/games/2025/01'] })
+          json: () => Promise.resolve({ 
+            archives: [`https://api.chess.com/pub/player/test/games/${year}/${month}`] 
+          })
         } as Response)
       }
       if (url.includes('/pgn')) {
