@@ -22,7 +22,7 @@ const mockGames = [
     date: '2024.01.01',
     white: 'Player1',
     black: 'Player2',
-    pgn: '[Event "Chess.com Game"]\n[Date "2024.01.01"]\n[White "Player1"]\n[Black "Player2"]\n[Result "1-0"]\n[TimeControl "180"]\n1. e4 e5 1-0',
+    pgn: '[Event "Chess.com Game"]\n[Date "2024.01.01"]\n[White "Player1"]\n[Black "Player2"]\n[Result "1-0"]\n[TimeControl "180"]\n\n1. e4 e5 *',
     result: '1-0',
     timeControl: '180',
     gameType: 'Bullet'
@@ -31,7 +31,7 @@ const mockGames = [
     date: '2024.01.02',
     white: 'Player3',
     black: 'Player4',
-    pgn: '[Event "Chess.com Game"]\n[Date "2024.01.02"]\n[White "Player3"]\n[Black "Player4"]\n[Result "0-1"]\n[TimeControl "600"]\n1. d4 d5 0-1',
+    pgn: '[Event "Chess.com Game"]\n[Date "2024.01.02"]\n[White "Player3"]\n[Black "Player4"]\n[Result "0-1"]\n[TimeControl "600"]\n\n1. d4 d5 *',
     result: '0-1',
     timeControl: '600',
     gameType: 'Blitz'
@@ -40,7 +40,7 @@ const mockGames = [
     date: '2024.01.03',
     white: 'Player5',
     black: 'Player6',
-    pgn: '[Event "Chess.com Game"]\n[Date "2024.01.03"]\n[White "Player5"]\n[Black "Player6"]\n[Result "1-0"]\n[TimeControl "1800"]\n1. e4 e5 1-0',
+    pgn: '[Event "Chess.com Game"]\n[Date "2024.01.03"]\n[White "Player5"]\n[Black "Player6"]\n[Result "1-0"]\n[TimeControl "1800"]\n\n1. e4 e5 *',
     result: '1-0',
     timeControl: '1800',
     gameType: 'Rapid'
@@ -49,7 +49,7 @@ const mockGames = [
     date: '2024.01.04',
     white: 'Player7',
     black: 'Player8',
-    pgn: '[Event "Chess.com Game"]\n[Date "2024.01.04"]\n[White "Player7"]\n[Black "Player8"]\n[Result "0-1"]\n[TimeControl "1/172800"]\n1. d4 d5 0-1',
+    pgn: '[Event "Chess.com Game"]\n[Date "2024.01.04"]\n[White "Player7"]\n[Black "Player8"]\n[Result "0-1"]\n[TimeControl "1/172800"]\n\n1. d4 d5 *',
     result: '0-1',
     timeControl: '1/172800',
     gameType: 'Daily'
