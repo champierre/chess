@@ -187,13 +187,13 @@ function App() {
       
       console.log(`Found ${sortedArchives.length} archives to process`);
       
-      // Process archives until we have 100 games or run out of archives
+      // Calculate threshold date (90 days ago)
+      const now = new Date();
+      const thresholdDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+      console.log(`Fetching games after ${thresholdDate.toISOString()}`);
+      
+      // Process archives to get games from the last 90 days
       for (const archiveUrl of sortedArchives) {
-        if (allGames.length >= 100) {
-          console.log('Reached 100 games limit, stopping archive processing');
-          break;
-        }
-        
         const pgnResponse = await fetch(`${archiveUrl}/pgn`);
         const pgnText = await pgnResponse.text();
         
@@ -206,11 +206,6 @@ function App() {
 
         // Parse each game's metadata
         for (const gamePgn of games) {
-          if (allGames.length >= 100) {
-            console.log(`Reached 100 games limit while processing archive ${archiveUrl}`);
-            break;
-          }
-          
           const dateMatch = gamePgn.match(/\[Date "([^"]+)"/);
           const whiteMatch = gamePgn.match(/\[White "([^"]+)"/);
           const blackMatch = gamePgn.match(/\[Black "([^"]+)"/);
@@ -218,6 +213,14 @@ function App() {
           const timeControlMatch = gamePgn.match(/\[TimeControl "([^"]+)"/);
 
           if (dateMatch && whiteMatch && blackMatch && resultMatch) {
+            // Check if the game is within the last 90 days
+            const gameDate = new Date(dateMatch[1]);
+            if (gameDate < thresholdDate) {
+              // Skip games older than 90 days
+              continue;
+            }
+            
+            // Only add games within the last 90 days
             allGames.push({
               date: dateMatch[1],
               white: whiteMatch[1],
@@ -240,7 +243,7 @@ function App() {
       
       setGames(sortedGames);
       setCurrentPage(1); // Reset to first page when new games are fetched
-      setFeedback({ type: 'success', message: `${sortedGames.length}件の対局データを取得しました` });
+      setFeedback({ type: 'success', message: `過去90日間の対局を${sortedGames.length}件取得しました` });
     } catch (error) {
       console.error('Error fetching games:', error);
       setFeedback({ type: 'error', message: '対局データの取得に失敗しました' });
