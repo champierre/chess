@@ -294,12 +294,12 @@ describe('ゲーム選択と情報表示のテスト', () => {
     const fetchButton = screen.getByRole('button', { name: '取得' })
     await user.click(fetchButton)
 
-    // 最初のゲームを選択
-    const firstGame = await screen.findByText('2025.01.07')
-    const firstGameButton = firstGame.closest('button')
+    // 最初のゲームを選択（日付は動的に生成される）
+    const firstGame = await screen.findByRole('button', { name: new RegExp(mockGames[0].date) })
+    const firstGameButton = firstGame
     expect(firstGameButton).toBeDefined()
     
-    await user.click(firstGameButton!)
+    await user.click(firstGameButton)
 
     // ハイライトの確認
     expect(firstGameButton).toHaveClass('bg-blue-100')
@@ -308,13 +308,13 @@ describe('ゲーム選択と情報表示のテスト', () => {
     const gameInfo = screen.getByText('選択された対局情報')
     expect(gameInfo).toBeInTheDocument()
 
-    const dateInfo = screen.getByText('日付: 2025.01.07')
+    const dateInfo = screen.getByText(`日付: ${mockGames[0].date}`)
     expect(dateInfo).toBeInTheDocument()
 
-    const resultInfo = screen.getByText('結果: 1-0')
+    const resultInfo = screen.getByText(`結果: ${mockGames[0].result}`)
     expect(resultInfo).toBeInTheDocument()
 
-    const playerInfo = screen.getByText('白: Player1, 黒: Player2')
+    const playerInfo = screen.getByText(`白: ${mockGames[0].white}, 黒: ${mockGames[0].black}`)
     expect(playerInfo).toBeInTheDocument()
   })
 })
