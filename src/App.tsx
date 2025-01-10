@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Chess } from 'chess.js';
 import * as Toast from '@radix-ui/react-toast';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowsUpDown } from '@fortawesome/free-solid-svg-icons';
+import { faArrowsUpDown, faCheck, faXmark, faEquals } from '@fortawesome/free-solid-svg-icons';
 
 type ChessBoard = {
   position: (fen: string) => void;
@@ -48,6 +48,21 @@ interface Game {
   black: string;
   pgn: string;
   result: string;
+}
+
+function getResultIcon(game: Game, currentUser: string) {
+  if (game.result === "1/2-1/2") {
+    return <FontAwesomeIcon icon={faEquals} className="text-gray-600 ml-1" />;
+  }
+  
+  const userIsWhite = game.white === currentUser;
+  const userWon = (userIsWhite && game.result === "1-0") || (!userIsWhite && game.result === "0-1");
+  
+  if (userWon) {
+    return <FontAwesomeIcon icon={faCheck} className="text-green-500 ml-1" />;
+  } else {
+    return <FontAwesomeIcon icon={faXmark} className="text-green-500 ml-1" />;
+  }
 }
 
 function App() {
@@ -267,7 +282,7 @@ function App() {
                     >
                       <span className="font-medium">{game.date}</span>
                       <span className="text-gray-600">
-                        {game.white}{game.result === "1-0" ? " 👑" : game.result === "1/2-1/2" ? " ⭕" : ""} vs {game.black}{game.result === "0-1" ? " 👑" : game.result === "1/2-1/2" ? " ⭕" : ""}
+                        {game.white} vs {game.black} {getResultIcon(game, username)}
                       </span>
                     </button>
                   ))}
