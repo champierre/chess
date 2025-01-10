@@ -92,12 +92,22 @@ describe('ゲームタイプアイコンのテスト', () => {
     // Bulletゲームのアイコンを確認
     const bulletIcon = await screen.findByTestId('bullet-icon')
     expect(bulletIcon).toBeInTheDocument()
-    expect(bulletIcon).toHaveClass('text-yellow-500')
+    expect(bulletIcon).toHaveClass('text-amber-800')
 
     // Blitzゲームのアイコンを確認
-    const blitzIcon = await screen.findByTitle('Blitz')
+    const blitzIcon = await screen.findByTestId('blitz-icon')
     expect(blitzIcon).toBeInTheDocument()
-    expect(blitzIcon).toHaveClass('text-blue-500')
+    expect(blitzIcon).toHaveClass('text-yellow-500')
+
+    // Rapidゲームのアイコンを確認
+    const rapidIcon = await screen.findByTestId('rapid-icon')
+    expect(rapidIcon).toBeInTheDocument()
+    expect(rapidIcon).toHaveClass('text-green-500')
+
+    // Dailyゲームのアイコンを確認
+    const dailyIcon = await screen.findByTestId('daily-icon')
+    expect(dailyIcon).toBeInTheDocument()
+    expect(dailyIcon).toHaveClass('text-orange-500')
 
     // ゲームを選択してゲームタイプ情報を確認
     const firstGame = await screen.findByText('2024.01.01')
@@ -107,7 +117,7 @@ describe('ゲームタイプアイコンのテスト', () => {
     // 選択されたゲーム情報にゲームタイプとアイコンが表示されることを確認
     const gameTypeInfo = screen.getByText(/ゲームタイプ: Bullet/)
     expect(gameTypeInfo).toBeInTheDocument()
-    const selectedGameIcon = screen.getAllByTitle('Bullet')[1] // 2つ目のBulletアイコン（詳細表示）
+    const selectedGameIcon = screen.getAllByTestId('bullet-icon')[1] // 2つ目のBulletアイコン（詳細表示）
     expect(selectedGameIcon).toBeInTheDocument()
   })
 })

@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Chess } from 'chess.js';
 import * as Toast from '@radix-ui/react-toast';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowsUpDown, faCheck, faXmark, faEquals, faBolt, faClock, faStopwatch, faCalendar } from '@fortawesome/free-solid-svg-icons';
+import { faArrowsUpDown, faCheck, faXmark, faEquals, faBolt, faRocket, faStopwatch, faSun } from '@fortawesome/free-solid-svg-icons';
 
 type ChessBoard = {
   position: (fen: string) => void;
@@ -55,13 +55,13 @@ interface Game {
 function getGameTypeIcon(gameType: 'Bullet' | 'Blitz' | 'Rapid' | 'Daily'): JSX.Element {
   switch (gameType) {
     case 'Bullet':
-      return <FontAwesomeIcon data-testid="bullet-icon" icon={faBolt} className="text-yellow-500" title="Bullet" />;
+      return <FontAwesomeIcon data-testid="bullet-icon" icon={faRocket} className="text-amber-800" title="Bullet" />;
     case 'Blitz':
-      return <FontAwesomeIcon data-testid="blitz-icon" icon={faClock} className="text-blue-500" title="Blitz" />;
+      return <FontAwesomeIcon data-testid="blitz-icon" icon={faBolt} className="text-yellow-500" title="Blitz" />;
     case 'Rapid':
       return <FontAwesomeIcon data-testid="rapid-icon" icon={faStopwatch} className="text-green-500" title="Rapid" />;
     case 'Daily':
-      return <FontAwesomeIcon data-testid="daily-icon" icon={faCalendar} className="text-purple-500" title="Daily" />;
+      return <FontAwesomeIcon data-testid="daily-icon" icon={faSun} className="text-orange-500" title="Daily" />;
   }
 }
 
