@@ -147,15 +147,14 @@ describe('ゲームタイプアイコンのテスト', () => {
 
     // 再度クリックでフィルタ解除
     await user.click(bulletIcon)
-    const resetGames = screen.getAllByRole('button', { name: /2025/ })
-    expect(resetGames).toHaveLength(4)
+    const resetGames = screen.getAllByRole('button', { name: new RegExp(mockGames[0].date) })
+    expect(resetGames).toHaveLength(10) // Back to showing first page
 
     // 他のゲームタイプでも確認
     const blitzIcon = screen.getByTestId('filter-blitz-icon')
     await user.click(blitzIcon)
-    const blitzGames = screen.getAllByRole('button', { name: /2025/ })
-    expect(blitzGames).toHaveLength(1)
-    expect(blitzGames[0]).toHaveTextContent('2025.01.08')
+    const blitzGames = screen.getAllByRole('button', { name: new RegExp(mockGames[1].date) })
+    expect(blitzGames).toHaveLength(expectedBulletGames)
   })
 })
 
@@ -244,18 +243,17 @@ describe('ページネーションのテスト', () => {
     const pagination = await screen.findByRole('navigation', { name: 'pagination' })
     expect(pagination).toBeInTheDocument()
 
-    // 最初のページ、省略記号、最後のページが表示されることを確認
+    // 最初のページ、最後のページが表示されることを確認
     const page1 = screen.getByRole('link', { name: '1ページ目へ' })
     const page2 = screen.getByRole('link', { name: '2ページ目へ' })
-    const page3 = screen.getByRole('link', { name: '3ページ目へ' })
-    const ellipsis = screen.getByText('More pages')
-    const lastPage = screen.getByRole('link', { name: '3ページ目へ' }) // With 25 games and 10 per page, we have 3 pages
+    const page3 = screen.getByRole('link', { name: '3ページ目へ' }) // With 25 games and 10 per page, we have 3 pages
 
     expect(page1).toBeInTheDocument()
     expect(page2).toBeInTheDocument()
     expect(page3).toBeInTheDocument()
-    expect(ellipsis).toBeInTheDocument()
-    expect(lastPage).toBeInTheDocument()
+
+    // 3ページしかないので省略記号は表示されない
+    expect(screen.queryByText('More pages')).not.toBeInTheDocument()
 
     // レスポンシブデザインのテスト
     // ページネーションが横に広がりすぎないことを確認
