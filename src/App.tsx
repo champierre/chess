@@ -38,6 +38,7 @@ interface ChessMove {
 import {
   Pagination,
   PaginationContent,
+  PaginationEllipsis,
   PaginationItem,
   PaginationLink,
   PaginationNext,
@@ -395,17 +396,72 @@ function App() {
                           前へ
                         </PaginationPrevious>
                       </PaginationItem>
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                        <PaginationItem key={page}>
-                          <PaginationLink
-                            onClick={() => setCurrentPage(page)}
-                            isActive={currentPage === page}
-                            aria-label={`${page}ページ目へ`}
-                          >
-                            {page}
-                          </PaginationLink>
-                        </PaginationItem>
-                      ))}
+                      {(() => {
+                        // ページネーション表示用のユーティリティ関数
+                        const getPageNumbers = (current: number, total: number): (number | 'ellipsis')[] => {
+                          if (total <= 7) {
+                            return Array.from({ length: total }, (_, i) => i + 1);
+                          }
+
+                          const pages: (number | 'ellipsis')[] = [];
+                          const delta = 2; // 現在のページの前後に表示するページ数
+
+                          // 最初のページは常に表示
+                          pages.push(1);
+
+                          // 現在のページの周辺のページを計算
+                          const leftBound = Math.max(2, current - delta);
+                          const rightBound = Math.min(total - 1, current + delta);
+
+                          // 左側の省略記号
+                          if (leftBound > 2) {
+                            pages.push('ellipsis');
+                          } else if (leftBound === 2) {
+                            pages.push(2);
+                          }
+
+                          // 現在のページの周辺
+                          for (let i = leftBound; i <= rightBound; i++) {
+                            if (i === leftBound && i > 2) {
+                              pages.push(i);
+                            } else if (i === rightBound && i < total - 1) {
+                              pages.push(i);
+                            } else if (i > leftBound && i < rightBound) {
+                              pages.push(i);
+                            }
+                          }
+
+                          // 右側の省略記号
+                          if (rightBound < total - 1) {
+                            pages.push('ellipsis');
+                          } else if (rightBound === total - 1) {
+                            pages.push(total - 1);
+                          }
+
+                          // 最後のページは常に表示
+                          if (total > 1) {
+                            pages.push(total);
+                          }
+
+                          return pages;
+                        };
+
+                        return getPageNumbers(currentPage, totalPages).map((page, idx) => (
+                          <PaginationItem key={`${idx}-${page}`}>
+                            {page === 'ellipsis' ? (
+                              <PaginationEllipsis />
+                            ) : (
+                              <PaginationLink
+                                onClick={() => setCurrentPage(page as number)}
+                                isActive={currentPage === page}
+                                aria-label={`${page}ページ目へ`}
+                              >
+                                {page}
+                              </PaginationLink>
+                            )}
+                          </PaginationItem>
+                        ));
+                      })()}
                       <PaginationItem>
                         <PaginationNext
                           onClick={() => setCurrentPage((prev: number) => Math.min(totalPages, prev + 1))}
