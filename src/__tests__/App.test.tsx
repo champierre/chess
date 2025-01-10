@@ -54,7 +54,7 @@ describe('チェス盤のテスト', () => {
 describe('ゲーム選択と情報表示のテスト', () => {
   beforeEach(() => {
     // APIレスポンスをモック
-    vi.spyOn(global, 'fetch').mockImplementation((input: RequestInfo | URL, init?: RequestInit) => {
+    vi.spyOn(global, 'fetch').mockImplementation((input: RequestInfo | URL) => {
       const url = typeof input === 'string' ? input : input.toString()
       if (url.includes('/archives')) {
         return Promise.resolve({
