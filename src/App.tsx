@@ -4,9 +4,21 @@ import * as Toast from '@radix-ui/react-toast';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowsUpDown } from '@fortawesome/free-solid-svg-icons';
 
+type ChessBoard = {
+  position: (fen: string) => void;
+  destroy: () => void;
+  flip: () => void;
+};
+
 declare global {
   interface Window {
-    Chessboard: any;
+    Chessboard: (
+      element: HTMLDivElement,
+      config: {
+        position: string;
+        pieceTheme: string;
+      }
+    ) => ChessBoard;
   }
 }
 
@@ -45,9 +57,13 @@ function App() {
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error', message: string } | null>(null);
   const [isFlipped, setIsFlipped] = useState(false);
   const [games, setGames] = useState<Game[]>([]);
-  const boardRef = useRef<any>(null);
-  const gameRef = useRef<any>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const boardRef = useRef<ChessBoard | null>(null);
+  const gameRef = useRef<Chess | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
+  // Ensure refs are mutable
+  const mutableBoardRef = boardRef as React.MutableRefObject<ChessBoard | null>;
+  const mutableGameRef = gameRef as React.MutableRefObject<Chess | null>;
   
   const itemsPerPage = 10;
   const totalPages = Math.ceil(games.length / itemsPerPage);
@@ -70,18 +86,18 @@ function App() {
 
   useEffect(() => {
     if (containerRef.current) {
-      boardRef.current = window.Chessboard(containerRef.current, {
+      mutableBoardRef.current = window.Chessboard(containerRef.current, {
         position: 'start',
         pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'
       });
     }
 
     return () => {
-      if (boardRef.current) {
-        boardRef.current.destroy();
+      if (mutableBoardRef.current) {
+        mutableBoardRef.current.destroy();
       }
     };
-  }, []);
+  }, [mutableBoardRef]);
 
   const [loading, setLoading] = useState(false);
 
@@ -176,9 +192,11 @@ function App() {
     try {
       const game = new Chess();
       game.loadPgn(selectedPgn || pgn);
-      gameRef.current = game;
+      mutableGameRef.current = game;
       setCurrentMove(0);
-      boardRef.current.position('start');
+      if (mutableBoardRef.current) {
+        mutableBoardRef.current.position('start');
+      }
       setFeedback({ type: 'success', message: '棋譜を読み込みました' });
     } catch (error) {
       console.error('Invalid PGN:', error);
@@ -187,21 +205,21 @@ function App() {
   };
 
   const nextMove = () => {
-    if (gameRef.current && currentMove < gameRef.current.history().length) {
-      const moves = gameRef.current.history({ verbose: true }) as ChessMove[];
+    if (mutableGameRef.current && currentMove < mutableGameRef.current.history().length && mutableBoardRef.current) {
+      const moves = mutableGameRef.current.history({ verbose: true }) as ChessMove[];
       const move = moves[currentMove];
       if (move) {
-        boardRef.current.position(move.after);
+        mutableBoardRef.current.position(move.after);
         setCurrentMove(prev => prev + 1);
       }
     }
   };
 
   const prevMove = () => {
-    if (gameRef.current && currentMove > 0) {
-      const moves = gameRef.current.history({ verbose: true }) as ChessMove[];
+    if (mutableGameRef.current && currentMove > 0 && mutableBoardRef.current) {
+      const moves = mutableGameRef.current.history({ verbose: true }) as ChessMove[];
       const move = moves[currentMove - 2];
-      boardRef.current.position(move ? move.after : 'start');
+      mutableBoardRef.current.position(move ? move.after : 'start');
       setCurrentMove(prev => prev - 1);
     }
   };
@@ -322,8 +340,8 @@ function App() {
               </button>
               <button
                 onClick={() => {
-                  if (boardRef.current) {
-                    boardRef.current.flip();
+                  if (mutableBoardRef.current) {
+                    mutableBoardRef.current.flip();
                     setIsFlipped(!isFlipped);
                   }
                 }}
