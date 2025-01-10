@@ -85,14 +85,19 @@ function App() {
         console.error('Failed to save username to localStorage:', error);
       }
 
-      // Sort archives in reverse chronological order and take the most recent ones
+      // Sort archives in reverse chronological order
       const sortedArchives = archivesData.archives.sort().reverse();
-      const recentArchives = sortedArchives.slice(0, 2); // Take 2 months to ensure we get at least 10 games
-
-      // Fetch PGN data from recent archives
       const allGames: Array<{date: string, white: string, black: string, pgn: string}> = [];
       
-      for (const archiveUrl of recentArchives) {
+      console.log(`Found ${sortedArchives.length} archives to process`);
+      
+      // Process archives until we have 100 games or run out of archives
+      for (const archiveUrl of sortedArchives) {
+        if (allGames.length >= 100) {
+          console.log('Reached 100 games limit, stopping archive processing');
+          break;
+        }
+        
         const pgnResponse = await fetch(`${archiveUrl}/pgn`);
         const pgnText = await pgnResponse.text();
         
@@ -100,9 +105,16 @@ function App() {
         const games = pgnText.split('\n\n[').map((game, index) => 
           index === 0 ? game : '[' + game
         ).filter(game => game.trim());
+        
+        console.log(`Found ${games.length} games in archive ${archiveUrl}`);
 
         // Parse each game's metadata
         for (const gamePgn of games) {
+          if (allGames.length >= 100) {
+            console.log(`Reached 100 games limit while processing archive ${archiveUrl}`);
+            break;
+          }
+          
           const dateMatch = gamePgn.match(/\[Date "([^"]+)"/);
           const whiteMatch = gamePgn.match(/\[White "([^"]+)"/);
           const blackMatch = gamePgn.match(/\[Black "([^"]+)"/);
@@ -118,9 +130,15 @@ function App() {
         }
       }
 
-      // Take the 10 most recent games
-      setGames(allGames.slice(0, 10));
-      setFeedback({ type: 'success', message: '対局データを取得しました' });
+      console.log(`Total games collected before sorting: ${allGames.length}`);
+      
+      // Sort games by date in reverse chronological order and take up to 100
+      const sortedGames = allGames.sort((a, b) => {
+        return new Date(b.date).getTime() - new Date(a.date).getTime();
+      });
+      
+      setGames(sortedGames);
+      setFeedback({ type: 'success', message: `${sortedGames.length}件の対局データを取得しました` });
     } catch (error) {
       console.error('Error fetching games:', error);
       setFeedback({ type: 'error', message: '対局データの取得に失敗しました' });
