@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Chess } from 'chess.js';
 import * as Toast from '@radix-ui/react-toast';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -73,6 +73,7 @@ function App() {
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error', message: string } | null>(null);
   const [isFlipped, setIsFlipped] = useState(false);
   const [games, setGames] = useState<Game[]>([]);
+  const [selectedGame, setSelectedGame] = useState<Game | null>(null);
   const boardRef = useRef<ChessBoard | null>(null);
   const gameRef = useRef<Chess | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -274,11 +275,16 @@ function App() {
               <div className="mb-4">
                 <h2 className="text-lg font-semibold mb-2">最近の対局</h2>
                 <div className="border rounded divide-y">
-                  {paginatedGames.map((game, index) => (
+                  {paginatedGames.map((game: Game, index: number) => (
                     <button
                       key={index}
-                      onClick={() => loadPGN(game.pgn)}
-                      className="w-full px-4 py-2 text-left hover:bg-gray-50 flex flex-col"
+                      onClick={() => {
+                        loadPGN(game.pgn);
+                        setSelectedGame(game);
+                      }}
+                      className={`w-full px-4 py-2 text-left flex flex-col ${
+                        selectedGame === game ? "bg-blue-100" : "hover:bg-gray-50"
+                      }`}
                     >
                       <span className="font-medium">{game.date} {getResultIcon(game, username)}</span>
                       <span className="text-gray-600">
@@ -342,6 +348,14 @@ function App() {
           </div>
           
           <div>
+            {selectedGame && (
+              <div className="mb-4 p-2 bg-gray-100 rounded">
+                <p className="font-bold mb-1">選択された対局情報</p>
+                <p>日付: {selectedGame.date}</p>
+                <p>結果: {selectedGame.result}</p>
+                <p>白: {selectedGame.white}, 黒: {selectedGame.black}</p>
+              </div>
+            )}
             <div ref={containerRef} className="mb-4" />
             <div className="flex justify-center gap-4">
               <button 
