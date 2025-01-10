@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Chess } from 'chess.js';
 import * as Toast from '@radix-ui/react-toast';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faRotate } from '@fortawesome/free-solid-svg-icons';
+import { faArrowUpArrowDown } from '@fortawesome/free-solid-svg-icons';
 
 declare global {
   interface Window {
@@ -125,7 +125,7 @@ function App() {
                 title="盤の上下反転"
                 aria-label="盤の上下反転"
               >
-                <FontAwesomeIcon icon={faRotate} />
+                <FontAwesomeIcon icon={faArrowUpArrowDown} />
               </button>
             </div>
           </div>
