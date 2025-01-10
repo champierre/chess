@@ -131,18 +131,19 @@ describe('ゲームタイプアイコンのテスト', () => {
     const fetchButton = screen.getByRole('button', { name: '取得' })
     await user.click(fetchButton)
 
-    // 全ゲームが描画されているかを確認（モックデータは4件）
-    const initialGames = await screen.findAllByRole('button', { name: /2025/ })
-    expect(initialGames).toHaveLength(4)
+    // 全ゲームが描画されているかを確認（1ページ分の10件）
+    const initialGames = await screen.findAllByRole('button', { name: new RegExp(mockGames[0].date) })
+    expect(initialGames).toHaveLength(10) // itemsPerPage is 10
 
     // Bulletアイコンをクリック
     const bulletIcon = await screen.findByTestId('filter-bullet-icon')
     await user.click(bulletIcon)
 
-    // Bulletのみが表示されているか確認（モックデータでは1件）
-    const bulletGames = screen.getAllByRole('button', { name: /2025/ })
-    expect(bulletGames).toHaveLength(1)
-    expect(bulletGames[0]).toHaveTextContent('2025.01.07')
+    // Bulletのみが表示されているか確認（モックデータの1/4が Bullet）
+    const bulletGames = screen.getAllByRole('button', { name: new RegExp(mockGames[0].date) })
+    const expectedBulletGames = Math.min(10, Math.ceil(25/4)) // 25 total games, 4 types, max 10 per page
+    expect(bulletGames).toHaveLength(expectedBulletGames)
+    expect(bulletGames[0]).toHaveTextContent(mockGames[0].date)
 
     // 再度クリックでフィルタ解除
     await user.click(bulletIcon)
@@ -236,8 +237,11 @@ describe('ページネーションのテスト', () => {
     const fetchButton = screen.getByRole('button', { name: '取得' })
     await user.click(fetchButton)
 
+    // ゲームが読み込まれるのを待つ
+    await screen.findByText(mockGames[0].date)
+
     // ページネーションの表示を確認
-    const pagination = screen.getByRole('navigation', { name: 'pagination' })
+    const pagination = await screen.findByRole('navigation', { name: 'pagination' })
     expect(pagination).toBeInTheDocument()
 
     // 最初のページ、省略記号、最後のページが表示されることを確認
@@ -245,7 +249,7 @@ describe('ページネーションのテスト', () => {
     const page2 = screen.getByRole('link', { name: '2ページ目へ' })
     const page3 = screen.getByRole('link', { name: '3ページ目へ' })
     const ellipsis = screen.getByText('More pages')
-    const lastPage = screen.getByRole('link', { name: '68ページ目へ' })
+    const lastPage = screen.getByRole('link', { name: '3ページ目へ' }) // With 25 games and 10 per page, we have 3 pages
 
     expect(page1).toBeInTheDocument()
     expect(page2).toBeInTheDocument()
