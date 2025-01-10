@@ -47,6 +47,7 @@ interface Game {
   white: string;
   black: string;
   pgn: string;
+  result: string;
 }
 
 function App() {
@@ -158,13 +159,15 @@ function App() {
           const dateMatch = gamePgn.match(/\[Date "([^"]+)"/);
           const whiteMatch = gamePgn.match(/\[White "([^"]+)"/);
           const blackMatch = gamePgn.match(/\[Black "([^"]+)"/);
+          const resultMatch = gamePgn.match(/\[Result "([^"]+)"/);
 
-          if (dateMatch && whiteMatch && blackMatch) {
+          if (dateMatch && whiteMatch && blackMatch && resultMatch) {
             allGames.push({
               date: dateMatch[1],
               white: whiteMatch[1],
               black: blackMatch[1],
-              pgn: gamePgn
+              pgn: gamePgn,
+              result: resultMatch[1]
             });
           }
         }
@@ -264,7 +267,7 @@ function App() {
                     >
                       <span className="font-medium">{game.date}</span>
                       <span className="text-gray-600">
-                        {game.white} vs {game.black}
+                        {game.white}{game.result === "1-0" ? " 👑" : game.result === "1/2-1/2" ? " 🤝" : ""} vs {game.black}{game.result === "0-1" ? " 👑" : game.result === "1/2-1/2" ? " 🤝" : ""}
                       </span>
                     </button>
                   ))}
