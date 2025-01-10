@@ -53,15 +53,22 @@ interface Game {
 }
 
 function getGameTypeIcon(gameType: 'Bullet' | 'Blitz' | 'Rapid' | 'Daily'): JSX.Element {
+  const iconClasses = {
+    Bullet: "text-yellow-500",
+    Blitz: "text-blue-500",
+    Rapid: "text-green-500",
+    Daily: "text-purple-500"
+  };
+  
   switch (gameType) {
     case 'Bullet':
-      return <FontAwesomeIcon icon={faBolt} className="text-yellow-500" title="Bullet" />;
+      return <FontAwesomeIcon icon={faBolt} className={iconClasses[gameType]} title="Bullet" />;
     case 'Blitz':
-      return <FontAwesomeIcon icon={faClock} className="text-blue-500" title="Blitz" />;
+      return <FontAwesomeIcon icon={faClock} className={iconClasses[gameType]} title="Blitz" />;
     case 'Rapid':
-      return <FontAwesomeIcon icon={faStopwatch} className="text-green-500" title="Rapid" />;
+      return <FontAwesomeIcon icon={faStopwatch} className={iconClasses[gameType]} title="Rapid" />;
     case 'Daily':
-      return <FontAwesomeIcon icon={faCalendar} className="text-purple-500" title="Daily" />;
+      return <FontAwesomeIcon icon={faCalendar} className={iconClasses[gameType]} title="Daily" />;
   }
 }
 
