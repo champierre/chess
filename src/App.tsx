@@ -21,15 +21,40 @@ interface ChessMove {
   san: string;
 }
 
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination"
+
+interface Game {
+  date: string;
+  white: string;
+  black: string;
+  pgn: string;
+}
+
 function App() {
   const [username, setUsername] = useState('');
   const [pgn, setPgn] = useState('');
   const [currentMove, setCurrentMove] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error', message: string } | null>(null);
   const [isFlipped, setIsFlipped] = useState(false);
+  const [games, setGames] = useState<Game[]>([]);
   const boardRef = useRef<any>(null);
   const gameRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  
+  const itemsPerPage = 10;
+  const totalPages = Math.ceil(games.length / itemsPerPage);
+  const paginatedGames = games.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   // Load saved username from localStorage
   useEffect(() => {
@@ -58,7 +83,6 @@ function App() {
     };
   }, []);
 
-  const [games, setGames] = useState<Array<{date: string, white: string, black: string, pgn: string}>>([]);
   const [loading, setLoading] = useState(false);
 
   const fetchGames = async () => {
@@ -87,7 +111,7 @@ function App() {
 
       // Sort archives in reverse chronological order
       const sortedArchives = archivesData.archives.sort().reverse();
-      const allGames: Array<{date: string, white: string, black: string, pgn: string}> = [];
+      const allGames: Game[] = [];
       
       console.log(`Found ${sortedArchives.length} archives to process`);
       
@@ -138,6 +162,7 @@ function App() {
       });
       
       setGames(sortedGames);
+      setCurrentPage(1); // Reset to first page when new games are fetched
       setFeedback({ type: 'success', message: `${sortedGames.length}件の対局データを取得しました` });
     } catch (error) {
       console.error('Error fetching games:', error);
@@ -213,7 +238,7 @@ function App() {
               <div className="mb-4">
                 <h2 className="text-lg font-semibold mb-2">最近の対局</h2>
                 <div className="border rounded divide-y">
-                  {games.map((game, index) => (
+                  {paginatedGames.map((game, index) => (
                     <button
                       key={index}
                       onClick={() => loadPGN(game.pgn)}
@@ -226,6 +251,41 @@ function App() {
                     </button>
                   ))}
                 </div>
+                {totalPages > 1 && (
+                  <Pagination className="mt-4">
+                    <PaginationContent>
+                      <PaginationItem>
+                        <PaginationPrevious
+                          onClick={() => setCurrentPage((prev: number) => Math.max(1, prev - 1))}
+                          className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
+                          aria-label="前のページへ"
+                        >
+                          前へ
+                        </PaginationPrevious>
+                      </PaginationItem>
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                        <PaginationItem key={page}>
+                          <PaginationLink
+                            onClick={() => setCurrentPage(page)}
+                            isActive={currentPage === page}
+                            aria-label={`${page}ページ目へ`}
+                          >
+                            {page}
+                          </PaginationLink>
+                        </PaginationItem>
+                      ))}
+                      <PaginationItem>
+                        <PaginationNext
+                          onClick={() => setCurrentPage((prev: number) => Math.min(totalPages, prev + 1))}
+                          className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}
+                          aria-label="次のページへ"
+                        >
+                          次へ
+                        </PaginationNext>
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
+                )}
               </div>
             ) : (
               <>
