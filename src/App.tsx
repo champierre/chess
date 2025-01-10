@@ -1,4 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
+import './App.css';
+import type { JSX } from 'react';
 import { Chess } from 'chess.js';
 import * as Toast from '@radix-ui/react-toast';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -107,6 +109,7 @@ function App() {
   const [isFlipped, setIsFlipped] = useState(false);
   const [games, setGames] = useState<Game[]>([]);
   const [selectedGame, setSelectedGame] = useState<Game | null>(null);
+  const [selectedGameType, setSelectedGameType] = useState<'Bullet' | 'Blitz' | 'Rapid' | 'Daily' | null>(null);
   const boardRef = useRef<ChessBoard | null>(null);
   const gameRef = useRef<Chess | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -116,8 +119,11 @@ function App() {
   const mutableGameRef = gameRef as React.MutableRefObject<Chess | null>;
   
   const itemsPerPage = 10;
-  const totalPages = Math.ceil(games.length / itemsPerPage);
-  const paginatedGames = games.slice(
+  const filteredGames = selectedGameType
+    ? games.filter((game: Game) => game.gameType === selectedGameType)
+    : games;
+  const totalPages = Math.ceil(filteredGames.length / itemsPerPage);
+  const paginatedGames = filteredGames.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
@@ -309,7 +315,47 @@ function App() {
             </div>
             {games.length > 0 ? (
               <div className="mb-4">
-                <h2 className="text-lg font-semibold mb-2">最近の対局</h2>
+                <h2 className="text-lg font-semibold mb-2 flex items-center">
+                  <span className="mr-4">最近の対局</span>
+                  <div className="flex items-center space-x-4">
+                    <button
+                      data-testid="filter-bullet-icon"
+                      data-devinid="filter-bullet"
+                      onClick={() => setSelectedGameType((prev: 'Bullet' | 'Blitz' | 'Rapid' | 'Daily' | null) => prev === 'Bullet' ? null : 'Bullet')}
+                      className={`cursor-pointer text-2xl ${selectedGameType === 'Bullet' ? 'text-amber-800' : 'text-amber-400'}`}
+                      title="Bullet"
+                    >
+                      <FontAwesomeIcon icon={faRocket} />
+                    </button>
+                    <button
+                      data-testid="filter-blitz-icon"
+                      data-devinid="filter-blitz"
+                      onClick={() => setSelectedGameType((prev: 'Bullet' | 'Blitz' | 'Rapid' | 'Daily' | null) => prev === 'Blitz' ? null : 'Blitz')}
+                      className={`cursor-pointer text-2xl ${selectedGameType === 'Blitz' ? 'text-yellow-500' : 'text-yellow-300'}`}
+                      title="Blitz"
+                    >
+                      <FontAwesomeIcon icon={faBolt} />
+                    </button>
+                    <button
+                      data-testid="filter-rapid-icon"
+                      data-devinid="filter-rapid"
+                      onClick={() => setSelectedGameType((prev: 'Bullet' | 'Blitz' | 'Rapid' | 'Daily' | null) => prev === 'Rapid' ? null : 'Rapid')}
+                      className={`cursor-pointer text-2xl ${selectedGameType === 'Rapid' ? 'text-green-500' : 'text-green-300'}`}
+                      title="Rapid"
+                    >
+                      <FontAwesomeIcon icon={faStopwatch} />
+                    </button>
+                    <button
+                      data-testid="filter-daily-icon"
+                      data-devinid="filter-daily"
+                      onClick={() => setSelectedGameType((prev: 'Bullet' | 'Blitz' | 'Rapid' | 'Daily' | null) => prev === 'Daily' ? null : 'Daily')}
+                      className={`cursor-pointer text-2xl ${selectedGameType === 'Daily' ? 'text-orange-500' : 'text-orange-300'}`}
+                      title="Daily"
+                    >
+                      <FontAwesomeIcon icon={faSun} />
+                    </button>
+                  </div>
+                </h2>
                 <div className="border rounded divide-y">
                   {paginatedGames.map((game: Game, index: number) => (
                     <button

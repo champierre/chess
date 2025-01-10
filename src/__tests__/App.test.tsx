@@ -138,6 +138,43 @@ describe('ゲームタイプアイコンのテスト', () => {
     const selectedGameIcon = screen.getAllByTestId('bullet-icon')[1] // 2つ目のBulletアイコン（詳細表示）
     expect(selectedGameIcon).toBeInTheDocument()
   })
+
+  it('ゲームタイプフィルタが機能することを確認', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    // ユーザー名を入力してゲームを取得
+    const usernameInput = screen.getByPlaceholderText('例: jishiha')
+    await user.type(usernameInput, 'testuser')
+    
+    const fetchButton = screen.getByRole('button', { name: '取得' })
+    await user.click(fetchButton)
+
+    // 全ゲームが描画されているかを確認（モックデータは4件）
+    const initialGames = await screen.findAllByRole('button', { name: /2024/ })
+    expect(initialGames).toHaveLength(4)
+
+    // Bulletアイコンをクリック
+    const bulletIcon = await screen.findByTestId('filter-bullet-icon')
+    await user.click(bulletIcon)
+
+    // Bulletのみが表示されているか確認（モックデータでは1件）
+    const bulletGames = screen.getAllByRole('button', { name: /2024/ })
+    expect(bulletGames).toHaveLength(1)
+    expect(bulletGames[0]).toHaveTextContent('2024.01.01')
+
+    // 再度クリックでフィルタ解除
+    await user.click(bulletIcon)
+    const resetGames = screen.getAllByRole('button', { name: /2024/ })
+    expect(resetGames).toHaveLength(4)
+
+    // 他のゲームタイプでも確認
+    const blitzIcon = screen.getByTestId('filter-blitz-icon')
+    await user.click(blitzIcon)
+    const blitzGames = screen.getAllByRole('button', { name: /2024/ })
+    expect(blitzGames).toHaveLength(1)
+    expect(blitzGames[0]).toHaveTextContent('2024.01.02')
+  })
 })
 
 describe('ゲーム選択と情報表示のテスト', () => {
