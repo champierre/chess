@@ -61,7 +61,7 @@ function getResultIcon(game: Game, currentUser: string) {
   if (userWon) {
     return <FontAwesomeIcon icon={faCheck} className="text-green-500 ml-1" />;
   } else {
-    return <FontAwesomeIcon icon={faXmark} className="text-green-500 ml-1" />;
+    return <FontAwesomeIcon icon={faXmark} className="text-red-500 ml-1" />;
   }
 }
 
@@ -280,9 +280,9 @@ function App() {
                       onClick={() => loadPGN(game.pgn)}
                       className="w-full px-4 py-2 text-left hover:bg-gray-50 flex flex-col"
                     >
-                      <span className="font-medium">{game.date}</span>
+                      <span className="font-medium">{game.date} {getResultIcon(game, username)}</span>
                       <span className="text-gray-600">
-                        {game.white} vs {game.black} {getResultIcon(game, username)}
+                        {game.white} vs {game.black}
                       </span>
                     </button>
                   ))}
