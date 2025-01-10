@@ -29,6 +29,8 @@ npm install
 npm run dev
 ```
 
+http://localhost:5173/chess/ を開いてください。
+
 ## 使用技術
 
 - [React](https://reactjs.org/)
