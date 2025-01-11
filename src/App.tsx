@@ -80,7 +80,7 @@ function deriveGameType(timeControl: string | undefined): 'Bullet' | 'Blitz' | '
   const seconds = parseInt(timeControl.split('|')[0], 10);
   
   // Classify based on time thresholds
-  if (seconds <= 180) return 'Bullet';      // 3 minutes or less
+  if (seconds < 180) return 'Bullet';      // less than 3 minutes
   if (seconds <= 600) return 'Blitz';       // 10 minutes or less
   if (seconds < 3600) return 'Rapid';       // Less than 60 minutes
   return 'Daily';                           // 60 minutes or more
@@ -215,11 +215,11 @@ function App() {
 
           if (dateMatch && whiteMatch && blackMatch && resultMatch) {
             // Check if the game is within the last 90 days
-            const gameDate = new Date(dateMatch[1]);
-            if (gameDate < thresholdDate) {
-              // Skip games older than 90 days
-              continue;
-            }
+            // const gameDate = new Date(dateMatch[1]);
+            // if (gameDate < thresholdDate) {
+            //   // Skip games older than 90 days
+            //   continue;
+            // }
             
             // Only add games within the last 90 days
             allGames.push({
@@ -244,7 +244,7 @@ function App() {
       
       setGames(sortedGames);
       setCurrentPage(1); // Reset to first page when new games are fetched
-      setFeedback({ type: 'success', message: `過去90日間の対局を${sortedGames.length}件取得しました` });
+      setFeedback({ type: 'success', message: `過去の対局を${sortedGames.length}件取得しました` });
     } catch (error) {
       console.error('Error fetching games:', error);
       setFeedback({ type: 'error', message: '対局データの取得に失敗しました' });
@@ -326,7 +326,7 @@ function App() {
                       data-testid="filter-bullet-icon"
                       data-devinid="filter-bullet"
                       onClick={() => setSelectedGameType((prev: 'Bullet' | 'Blitz' | 'Rapid' | 'Daily' | null) => prev === 'Bullet' ? null : 'Bullet')}
-                      className={`cursor-pointer text-2xl ${selectedGameType === 'Bullet' ? 'text-amber-800' : 'text-amber-400'}`}
+                      className={`cursor-pointer text-2xl ${selectedGameType === 'Bullet' ? 'text-amber-800' : 'text-gray-300'}`}
                       title="Bullet"
                     >
                       <FontAwesomeIcon icon={faRocket} />
@@ -335,7 +335,7 @@ function App() {
                       data-testid="filter-blitz-icon"
                       data-devinid="filter-blitz"
                       onClick={() => setSelectedGameType((prev: 'Bullet' | 'Blitz' | 'Rapid' | 'Daily' | null) => prev === 'Blitz' ? null : 'Blitz')}
-                      className={`cursor-pointer text-2xl ${selectedGameType === 'Blitz' ? 'text-yellow-500' : 'text-yellow-300'}`}
+                      className={`cursor-pointer text-2xl ${selectedGameType === 'Blitz' ? 'text-yellow-500' : 'text-gray-300'}`}
                       title="Blitz"
                     >
                       <FontAwesomeIcon icon={faBolt} />
@@ -344,7 +344,7 @@ function App() {
                       data-testid="filter-rapid-icon"
                       data-devinid="filter-rapid"
                       onClick={() => setSelectedGameType((prev: 'Bullet' | 'Blitz' | 'Rapid' | 'Daily' | null) => prev === 'Rapid' ? null : 'Rapid')}
-                      className={`cursor-pointer text-2xl ${selectedGameType === 'Rapid' ? 'text-green-500' : 'text-green-300'}`}
+                      className={`cursor-pointer text-2xl ${selectedGameType === 'Rapid' ? 'text-green-500' : 'text-gray-300'}`}
                       title="Rapid"
                     >
                       <FontAwesomeIcon icon={faStopwatch} />
@@ -353,7 +353,7 @@ function App() {
                       data-testid="filter-daily-icon"
                       data-devinid="filter-daily"
                       onClick={() => setSelectedGameType((prev: 'Bullet' | 'Blitz' | 'Rapid' | 'Daily' | null) => prev === 'Daily' ? null : 'Daily')}
-                      className={`cursor-pointer text-2xl ${selectedGameType === 'Daily' ? 'text-orange-500' : 'text-orange-300'}`}
+                      className={`cursor-pointer text-2xl ${selectedGameType === 'Daily' ? 'text-orange-500' : 'text-gray-300'}`}
                       title="Daily"
                     >
                       <FontAwesomeIcon icon={faSun} />

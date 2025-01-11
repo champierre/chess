@@ -22,9 +22,9 @@ const mockGames = [
     date: '2024.01.01',
     white: 'Player1',
     black: 'Player2',
-    pgn: '[Event "Chess.com Game"]\n[Date "2024.01.01"]\n[White "Player1"]\n[Black "Player2"]\n[Result "1-0"]\n[TimeControl "180"]\n\n1. e4 e5 *',
+    pgn: '[Event "Chess.com Game"]\n[Date "2024.01.01"]\n[White "Player1"]\n[Black "Player2"]\n[Result "1-0"]\n[TimeControl "60"]\n\n1. e4 e5 *',
     result: '1-0',
-    timeControl: '180',
+    timeControl: '60',
     gameType: 'Bullet'
   },
   {
