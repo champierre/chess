@@ -105,7 +105,7 @@ describe('ゲームタイプアイコンのテスト', () => {
     render(<App />)
 
     // ユーザー名を入力してゲームを取得
-    const usernameInput = screen.getByPlaceholderText('例: jishiha')
+    const usernameInput = screen.getByPlaceholderText('Chess.com ユーザー名')
     await user.type(usernameInput, 'test')
     
     const fetchButton = screen.getByRole('button', { name: '取得' })
@@ -148,7 +148,7 @@ describe('ゲームタイプアイコンのテスト', () => {
     render(<App />)
 
     // ユーザー名を入力してゲームを取得
-    const usernameInput = screen.getByPlaceholderText('例: jishiha')
+    const usernameInput = screen.getByPlaceholderText('Chess.com ユーザー名')
     await user.type(usernameInput, 'test')
     
     const fetchButton = screen.getByRole('button', { name: '取得' })
@@ -213,7 +213,7 @@ describe('ゲーム選択と情報表示のテスト', () => {
     render(<App />)
 
     // ユーザー名を入力してゲームを取得
-    const usernameInput = screen.getByPlaceholderText('例: jishiha')
+    const usernameInput = screen.getByPlaceholderText('Chess.com ユーザー名')
     await user.type(usernameInput, 'test')
     
     const fetchButton = screen.getByRole('button', { name: '取得' })

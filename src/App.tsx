@@ -296,16 +296,13 @@ function App() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <div className="mb-4">
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
-                Chess.com ユーザー名
-              </label>
               <div className="flex gap-2">
                 <input
                   id="username"
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="例: jishiha"
+                  placeholder="Chess.com ユーザー名"
                   className="flex-1 p-2 border rounded"
                 />
                 <button
