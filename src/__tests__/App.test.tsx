@@ -58,10 +58,12 @@ describe('チェス盤のテスト', () => {
 })
 
 describe('ゲームタイプアイコンのテスト', () => {
-  beforeAll(() => {
+  beforeAll(async () => {
     // Set up a fixed date for all tests in this suite
-    vi.useFakeTimers()
+    vi.useFakeTimers({ shouldAdvanceTime: true })
     vi.setSystemTime(new Date('2024-01-15'))
+    await vi.runAllTimersAsync()
+    vi.clearAllTimers()
   })
 
   afterAll(() => {
@@ -69,9 +71,11 @@ describe('ゲームタイプアイコンのテスト', () => {
     vi.restoreAllMocks()
   })
 
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true })
     vi.setSystemTime(new Date('2024-01-15'))
+    await vi.runAllTimersAsync()
+    vi.clearAllTimers()
     // APIレスポンスをモック
     vi.spyOn(global, 'fetch').mockImplementation((input: RequestInfo | URL, _init?: RequestInit) => {
       const url = typeof input === 'string' ? input : input.toString()
@@ -105,11 +109,11 @@ describe('ゲームタイプアイコンのテスト', () => {
     // ユーザー名を入力してゲームを取得
     const usernameInput = screen.getByPlaceholderText('例: jishiha')
     await user.type(usernameInput, 'testuser')
-    vi.advanceTimersByTime(100)
+    await vi.advanceTimersByTimeAsync(100)
     
     const fetchButton = screen.getByRole('button', { name: '取得' })
     await user.click(fetchButton)
-    vi.advanceTimersByTime(1000)
+    await vi.advanceTimersByTimeAsync(500)
 
     // ゲームタイプアイコンを確認
     const bulletIcons = await screen.findAllByTestId('bullet-icon')
@@ -157,11 +161,11 @@ describe('ゲームタイプアイコンのテスト', () => {
     // ユーザー名を入力してゲームを取得
     const usernameInput = screen.getByPlaceholderText('例: jishiha')
     await user.type(usernameInput, 'testuser')
-    vi.advanceTimersByTime(100)
+    await vi.advanceTimersByTimeAsync(1000)
     
     const fetchButton = screen.getByRole('button', { name: '取得' })
     await user.click(fetchButton)
-    vi.advanceTimersByTime(1000)
+    await vi.advanceTimersByTimeAsync(5000)
 
     // Wait for games to load and verify pagination
     await screen.findByText(mockGames[0].date);
@@ -221,24 +225,30 @@ describe('ゲームタイプアイコンのテスト', () => {
 })
 
 describe('ページネーションのテスト', () => {
-  beforeAll(() => {
-    vi.useFakeTimers()
+  beforeAll(async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
     vi.setSystemTime(new Date('2024-01-15'))
+    await vi.runAllTimersAsync()
+    vi.clearAllTimers()
   })
 
   afterAll(() => {
     vi.useRealTimers()
     vi.restoreAllMocks()
+    vi.clearAllTimers()
   })
 
-  beforeEach(() => {
-    vi.useFakeTimers()
+  beforeEach(async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
     vi.setSystemTime(new Date('2024-01-15'))
+    await vi.runAllTimersAsync()
+    vi.clearAllTimers()
   })
 
   afterEach(() => {
     vi.useRealTimers()
     vi.restoreAllMocks()
+    vi.clearAllTimers()
   })
 
   // getPageNumbers 関数をテストするためにコンポーネントから抽出
@@ -314,11 +324,11 @@ describe('ページネーションのテスト', () => {
     // ユーザー名を入力してゲームを取得
     const usernameInput = screen.getByPlaceholderText('例: jishiha')
     await user.type(usernameInput, 'testuser')
-    vi.advanceTimersByTime(100)
+    await vi.advanceTimersByTimeAsync(100)
     
     const fetchButton = screen.getByRole('button', { name: '取得' })
     await user.click(fetchButton)
-    vi.advanceTimersByTime(1000)
+    await vi.advanceTimersByTimeAsync(500)
 
     // ゲームが読み込まれるのを待つ
     await screen.findByText(mockGames[0].date)
@@ -395,11 +405,11 @@ describe('ゲーム選択と情報表示のテスト', () => {
     // ユーザー名を入力してゲームを取得
     const usernameInput = screen.getByPlaceholderText('例: jishiha')
     await user.type(usernameInput, 'testuser')
-    vi.advanceTimersByTime(100)
+    await vi.advanceTimersByTimeAsync(100)
     
     const fetchButton = screen.getByRole('button', { name: '取得' })
     await user.click(fetchButton)
-    vi.advanceTimersByTime(1000)
+    await vi.advanceTimersByTimeAsync(500)
 
     // 最初のゲームを選択（日付は動的に生成される）
     const firstGame = await screen.findByRole('button', { name: new RegExp(mockGames[0].date) })
@@ -407,6 +417,7 @@ describe('ゲーム選択と情報表示のテスト', () => {
     expect(firstGameButton).toBeDefined()
     
     await user.click(firstGameButton)
+    await vi.advanceTimersByTimeAsync(500)
 
     // ハイライトの確認
     expect(firstGameButton).toHaveClass('bg-blue-100')

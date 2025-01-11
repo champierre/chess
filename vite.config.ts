@@ -22,8 +22,8 @@ export default defineConfig({
     globals: true,
     setupFiles: ['./src/setupTests.ts'],
     include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
-    testTimeout: 60000, // Increase timeout to 60 seconds
-    maxConcurrency: 1, // Run tests serially to avoid timing issues
+    testTimeout: 30000, // Reduce timeout to 30 seconds since we've optimized timer handling
+    maxConcurrency: 1, // Run tests serially
     deps: {
       inline: [/@testing-library\/jest-dom/]
     }
