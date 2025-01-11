@@ -31,6 +31,12 @@ npm run dev
 
 http://localhost:5173/chess/ を開いてください。
 
+## テスト
+
+```bash
+npm run test
+```
+
 ## 使用技術
 
 - [React](https://reactjs.org/)
