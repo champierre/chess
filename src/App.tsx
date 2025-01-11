@@ -215,7 +215,7 @@ function App() {
 
           if (dateMatch && whiteMatch && blackMatch && resultMatch) {
             // Check if the game is within the last 90 days
-            const gameDate = new Date(dateMatch[1]);
+            // const gameDate = new Date(dateMatch[1]);
             // if (gameDate < thresholdDate) {
             //   // Skip games older than 90 days
             //   continue;
