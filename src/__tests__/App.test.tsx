@@ -66,9 +66,12 @@ describe('ゲームタイプアイコンのテスト', () => {
 
   afterAll(() => {
     vi.useRealTimers()
+    vi.restoreAllMocks()
   })
 
   beforeEach(() => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    vi.setSystemTime(new Date('2024-01-15'))
     // APIレスポンスをモック
     vi.spyOn(global, 'fetch').mockImplementation((input: RequestInfo | URL, _init?: RequestInit) => {
       const url = typeof input === 'string' ? input : input.toString()
@@ -177,7 +180,7 @@ describe('ゲームタイプアイコンのテスト', () => {
     await user.click(bulletIcon)
     vi.advanceTimersByTime(1000)
     
-    // Wait for filter to apply
+    // Wait for filter to apply and UI updates
     await screen.findByText(mockGames[0].date)
     vi.advanceTimersByTime(1000)
 
@@ -225,6 +228,17 @@ describe('ページネーションのテスト', () => {
 
   afterAll(() => {
     vi.useRealTimers()
+    vi.restoreAllMocks()
+  })
+
+  beforeEach(() => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2024-01-15'))
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+    vi.restoreAllMocks()
   })
 
   // getPageNumbers 関数をテストするためにコンポーネントから抽出
@@ -344,7 +358,10 @@ describe('ゲーム選択と情報表示のテスト', () => {
     vi.useRealTimers()
   })
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    vi.setSystemTime(new Date('2024-01-15'))
+    await vi.runAllTimersAsync()
     // APIレスポンスをモック
     vi.spyOn(global, 'fetch').mockImplementation((input: RequestInfo | URL, _init?: RequestInit) => {
       const url = typeof input === 'string' ? input : input.toString()
