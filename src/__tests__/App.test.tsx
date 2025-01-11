@@ -96,15 +96,17 @@ describe('ゲームタイプアイコンのテスト', () => {
   })
 
   it('ゲームタイプに応じたアイコンが表示されることを確認', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     render(<App />)
 
     // ユーザー名を入力してゲームを取得
     const usernameInput = screen.getByPlaceholderText('例: jishiha')
     await user.type(usernameInput, 'testuser')
+    vi.advanceTimersByTime(100)
     
     const fetchButton = screen.getByRole('button', { name: '取得' })
     await user.click(fetchButton)
+    vi.advanceTimersByTime(1000)
 
     // ゲームタイプアイコンを確認
     const bulletIcons = await screen.findAllByTestId('bullet-icon')
@@ -127,6 +129,7 @@ describe('ゲームタイプアイコンのテスト', () => {
     const firstGame = await screen.findByText(mockGames[0].date)
     const firstGameButton = firstGame.closest('button')
     await user.click(firstGameButton!)
+    vi.advanceTimersByTime(500)
 
     // 選択されたゲーム情報にゲームタイプとアイコンが表示されることを確認
     // Use a more flexible text matching approach
@@ -145,15 +148,17 @@ describe('ゲームタイプアイコンのテスト', () => {
   })
 
   it('ゲームタイプフィルタが機能することを確認', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     render(<App />)
 
     // ユーザー名を入力してゲームを取得
     const usernameInput = screen.getByPlaceholderText('例: jishiha')
     await user.type(usernameInput, 'testuser')
+    vi.advanceTimersByTime(100)
     
     const fetchButton = screen.getByRole('button', { name: '取得' })
     await user.click(fetchButton)
+    vi.advanceTimersByTime(1000)
 
     // Wait for games to load and verify pagination
     await screen.findByText(mockGames[0].date);
@@ -277,15 +282,17 @@ describe('ページネーションのテスト', () => {
   });
 
   it('ページ数が多いときに省略記号が表示されることを確認', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     render(<App />)
 
     // ユーザー名を入力してゲームを取得
     const usernameInput = screen.getByPlaceholderText('例: jishiha')
     await user.type(usernameInput, 'testuser')
+    vi.advanceTimersByTime(100)
     
     const fetchButton = screen.getByRole('button', { name: '取得' })
     await user.click(fetchButton)
+    vi.advanceTimersByTime(1000)
 
     // ゲームが読み込まれるのを待つ
     await screen.findByText(mockGames[0].date)
@@ -352,15 +359,17 @@ describe('ゲーム選択と情報表示のテスト', () => {
   })
 
   it('ゲームを選択すると、ハイライトされ情報が表示されることを確認', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     render(<App />)
 
     // ユーザー名を入力してゲームを取得
     const usernameInput = screen.getByPlaceholderText('例: jishiha')
     await user.type(usernameInput, 'testuser')
+    vi.advanceTimersByTime(100)
     
     const fetchButton = screen.getByRole('button', { name: '取得' })
     await user.click(fetchButton)
+    vi.advanceTimersByTime(1000)
 
     // 最初のゲームを選択（日付は動的に生成される）
     const firstGame = await screen.findByRole('button', { name: new RegExp(mockGames[0].date) })
