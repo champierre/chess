@@ -24,7 +24,9 @@ export default defineConfig({
     include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     testTimeout: 60000, // Increase timeout to 60 seconds
     maxConcurrency: 1, // Run tests serially to avoid timing issues
-    globalSetup: './src/setupTests.ts'
+    deps: {
+      inline: [/@testing-library\/jest-dom/]
+    }
   }
 } as VitestConfigExport)
 
