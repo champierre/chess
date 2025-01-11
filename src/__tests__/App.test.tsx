@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach, beforeAll, afterAll } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import App from '../App'
@@ -17,8 +17,11 @@ const mockChessboard = () => ({
 vi.stubGlobal('Chessboard', mockChessboard)
 
 // モックゲームデータ
+// Set up a fixed base date for mock data
+const BASE_DATE = new Date('2024-01-15');
+
 const mockGames = Array.from({ length: 25 }, (_, i) => {
-  const date = new Date();
+  const date = new Date(BASE_DATE);
   date.setDate(date.getDate() - i);
   const formattedDate = date.toISOString().split('T')[0].replace(/-/g, '.');
   
@@ -55,6 +58,16 @@ describe('チェス盤のテスト', () => {
 })
 
 describe('ゲームタイプアイコンのテスト', () => {
+  beforeAll(() => {
+    // Set up a fixed date for all tests in this suite
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2024-01-15'))
+  })
+
+  afterAll(() => {
+    vi.useRealTimers()
+  })
+
   beforeEach(() => {
     // APIレスポンスをモック
     vi.spyOn(global, 'fetch').mockImplementation((input: RequestInfo | URL, _init?: RequestInit) => {
@@ -111,15 +124,20 @@ describe('ゲームタイプアイコンのテスト', () => {
     expect(dailyIcons[0]).toHaveClass('text-orange-500')
 
     // ゲームを選択してゲームタイプ情報を確認
-    const firstGame = await screen.findByText('2025.01.07')
+    const firstGame = await screen.findByText(mockGames[0].date)
     const firstGameButton = firstGame.closest('button')
     await user.click(firstGameButton!)
 
     // 選択されたゲーム情報にゲームタイプとアイコンが表示されることを確認
-    const gameTypeInfo = screen.getByText(/ゲームタイプ: Bullet/)
-    expect(gameTypeInfo).toBeInTheDocument()
-    const selectedGameIcon = screen.getAllByTestId('bullet-icon')[1] // 2つ目のBulletアイコン（詳細表示）
+    // Use a more flexible text matching approach
+    // Use regex to match text that might be split across elements
+    const gameTypeText = screen.getByText(/ゲームタイプ:.*Bullet/, { exact: false });
+    expect(gameTypeText).toBeInTheDocument()
+
+    // Verify game type icon
+    const selectedGameIcon = screen.getAllByTestId('bullet-icon')[1] // Second bullet icon (in game details)
     expect(selectedGameIcon).toBeInTheDocument()
+    expect(selectedGameIcon).toHaveClass('text-amber-800')
   })
 
   it('ゲームタイプフィルタが機能することを確認', async () => {
@@ -135,7 +153,9 @@ describe('ゲームタイプアイコンのテスト', () => {
 
     // 全ゲームが描画されているかを確認（1ページ分の10件）
     await screen.findByText(mockGames[0].date) // Wait for games to load
-    const initialGames = screen.getAllByRole('button')
+    const initialGames = screen.getAllByRole('button').filter(button => 
+      button.textContent && /\d{4}\.\d{2}\.\d{2}/.test(button.textContent)
+    )
     expect(initialGames).toHaveLength(10) // itemsPerPage is 10
 
     // Bulletアイコンをクリック
@@ -166,6 +186,15 @@ describe('ゲームタイプアイコンのテスト', () => {
 })
 
 describe('ページネーションのテスト', () => {
+  beforeAll(() => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2024-01-15'))
+  })
+
+  afterAll(() => {
+    vi.useRealTimers()
+  })
+
   // getPageNumbers 関数をテストするためにコンポーネントから抽出
   const getPageNumbers = (current: number, total: number): (number | 'ellipsis')[] => {
     if (total <= 7) {
@@ -270,6 +299,16 @@ describe('ページネーションのテスト', () => {
 })
 
 describe('ゲーム選択と情報表示のテスト', () => {
+  beforeAll(() => {
+    // Set up a fixed date for all tests in this suite
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2024-01-15'))
+  })
+
+  afterAll(() => {
+    vi.useRealTimers()
+  })
+
   beforeEach(() => {
     // APIレスポンスをモック
     vi.spyOn(global, 'fetch').mockImplementation((input: RequestInfo | URL, _init?: RequestInit) => {
@@ -322,13 +361,18 @@ describe('ゲーム選択と情報表示のテスト', () => {
     const gameInfo = screen.getByText('選択された対局情報')
     expect(gameInfo).toBeInTheDocument()
 
-    const dateInfo = screen.getByText(`日付: ${mockGames[0].date}`)
+    // Use regex for text that might be split across elements
+    const dateInfo = screen.getByText(new RegExp(`日付: ${mockGames[0].date}`))
     expect(dateInfo).toBeInTheDocument()
 
-    const resultInfo = screen.getByText(`結果: ${mockGames[0].result}`)
+    const resultInfo = screen.getByText(new RegExp(`結果: ${mockGames[0].result}`))
     expect(resultInfo).toBeInTheDocument()
 
-    const playerInfo = screen.getByText(`白: ${mockGames[0].white}, 黒: ${mockGames[0].black}`)
+    const playerInfo = screen.getByText(new RegExp(`白: ${mockGames[0].white}, 黒: ${mockGames[0].black}`))
     expect(playerInfo).toBeInTheDocument()
+
+    // Check game type info with regex
+    const gameTypeInfo = screen.getByText(/ゲームタイプ: Bullet/)
+    expect(gameTypeInfo).toBeInTheDocument()
   })
 })
