@@ -393,7 +393,6 @@ function App() {
                           className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
                           aria-label="前のページへ"
                         >
-                          前へ
                         </PaginationPrevious>
                       </PaginationItem>
                       {(() => {
@@ -468,7 +467,6 @@ function App() {
                           className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}
                           aria-label="次のページへ"
                         >
-                          次へ
                         </PaginationNext>
                       </PaginationItem>
                     </PaginationContent>
