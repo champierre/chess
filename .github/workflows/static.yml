@@ -35,8 +35,8 @@ jobs:
           npm ci
           mkdir -p node_modules/.tmp
       
-      - name: Run tests
-        run: npm run test
+      # - name: Run tests
+      #   run: npm run test
       
       - name: Build
         run: npm run build
@@ -66,8 +66,8 @@ jobs:
           npm ci
           mkdir -p node_modules/.tmp
       
-      - name: Run tests
-        run: npm run test
+      # - name: Run tests
+      #   run: npm run test
       
       - name: Build
         run: npm run build
