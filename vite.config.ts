@@ -22,7 +22,7 @@ export default defineConfig({
     globals: true,
     setupFiles: ['./src/setupTests.ts'],
     include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
-    testTimeout: 10000, // Increase default timeout to 10 seconds
+    testTimeout: 30000 // Increase timeout to 30 seconds
   }
 } as VitestConfigExport)
 

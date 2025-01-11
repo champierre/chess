@@ -175,6 +175,11 @@ describe('ゲームタイプアイコンのテスト', () => {
     // Bulletアイコンをクリック
     const bulletIcon = await screen.findByTestId('filter-bullet-icon')
     await user.click(bulletIcon)
+    vi.advanceTimersByTime(1000)
+    
+    // Wait for filter to apply
+    await screen.findByText(mockGames[0].date)
+    vi.advanceTimersByTime(1000)
 
     // Verify filtered Bullet games (should show all Bullet games up to page limit)
     const bulletGames = screen.getAllByRole('button').filter(button =>
@@ -190,6 +195,12 @@ describe('ゲームタイプアイコンのテスト', () => {
 
     // 再度クリックでフィルタ解除
     await user.click(bulletIcon)
+    vi.advanceTimersByTime(1000)
+    
+    // Wait for filter to reset
+    await screen.findByText(mockGames[0].date)
+    vi.advanceTimersByTime(1000)
+    
     const resetGames = screen.getAllByRole('button', { name: new RegExp(mockGames[0].date) })
     expect(resetGames).toHaveLength(10) // Back to showing first page
 
@@ -197,6 +208,7 @@ describe('ゲームタイプアイコンのテスト', () => {
     const blitzIcon = screen.getByTestId('filter-blitz-icon')
     await user.click(blitzIcon)
     await screen.findByText(mockGames[1].date) // Wait for filtered games to load
+    vi.advanceTimersByTime(1000)
     const blitzGames = screen.getAllByRole('button', { name: /.*/ }).filter(button => 
       button.textContent && button.textContent.includes(mockGames[1].date)
     )
@@ -296,6 +308,7 @@ describe('ページネーションのテスト', () => {
 
     // ゲームが読み込まれるのを待つ
     await screen.findByText(mockGames[0].date)
+    vi.advanceTimersByTime(1000)
 
     // ページネーションの表示を確認
     const pagination = await screen.findByRole('navigation', { name: 'pagination' })
