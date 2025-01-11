@@ -21,12 +21,7 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['./src/setupTests.ts'],
-    include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
-    testTimeout: 30000, // Reduce timeout to 30 seconds since we've optimized timer handling
-    maxConcurrency: 1, // Run tests serially
-    deps: {
-      inline: [/@testing-library\/jest-dom/]
-    }
+    include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}']
   }
 } as VitestConfigExport)
 
