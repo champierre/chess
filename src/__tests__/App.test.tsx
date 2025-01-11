@@ -75,6 +75,9 @@ describe('チェス盤のテスト', () => {
 
 describe('ゲームタイプアイコンのテスト', () => {
   beforeEach(() => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    vi.setSystemTime(new Date('2024-01-15'))
+
     // APIレスポンスをモック
     vi.spyOn(global, 'fetch').mockImplementation((input: RequestInfo | URL, _init?: RequestInit) => {
       const url = typeof input === 'string' ? input : input.toString()
@@ -94,6 +97,7 @@ describe('ゲームタイプアイコンのテスト', () => {
 
   afterEach(() => {
     vi.restoreAllMocks()
+    vi.useRealTimers()
   })
 
   it('ゲームタイプに応じたアイコンが表示されることを確認', async () => {
@@ -102,7 +106,7 @@ describe('ゲームタイプアイコンのテスト', () => {
 
     // ユーザー名を入力してゲームを取得
     const usernameInput = screen.getByPlaceholderText('例: jishiha')
-    await user.type(usernameInput, 'testuser')
+    await user.type(usernameInput, 'test')
     
     const fetchButton = screen.getByRole('button', { name: '取得' })
     await user.click(fetchButton)
@@ -145,7 +149,7 @@ describe('ゲームタイプアイコンのテスト', () => {
 
     // ユーザー名を入力してゲームを取得
     const usernameInput = screen.getByPlaceholderText('例: jishiha')
-    await user.type(usernameInput, 'testuser')
+    await user.type(usernameInput, 'test')
     
     const fetchButton = screen.getByRole('button', { name: '取得' })
     await user.click(fetchButton)
@@ -179,6 +183,9 @@ describe('ゲームタイプアイコンのテスト', () => {
 
 describe('ゲーム選択と情報表示のテスト', () => {
   beforeEach(() => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    vi.setSystemTime(new Date('2024-01-15'))
+
     // APIレスポンスをモック
     vi.spyOn(global, 'fetch').mockImplementation((input: RequestInfo | URL, _init?: RequestInit) => {
       const url = typeof input === 'string' ? input : input.toString()
@@ -198,6 +205,7 @@ describe('ゲーム選択と情報表示のテスト', () => {
 
   afterEach(() => {
     vi.restoreAllMocks()
+    vi.useRealTimers()
   })
 
   it('ゲームを選択すると、ハイライトされ情報が表示されることを確認', async () => {
@@ -206,7 +214,7 @@ describe('ゲーム選択と情報表示のテスト', () => {
 
     // ユーザー名を入力してゲームを取得
     const usernameInput = screen.getByPlaceholderText('例: jishiha')
-    await user.type(usernameInput, 'testuser')
+    await user.type(usernameInput, 'test')
     
     const fetchButton = screen.getByRole('button', { name: '取得' })
     await user.click(fetchButton)
