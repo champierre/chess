@@ -130,9 +130,13 @@ describe('ゲームタイプアイコンのテスト', () => {
 
     // 選択されたゲーム情報にゲームタイプとアイコンが表示されることを確認
     // Use a more flexible text matching approach
-    // Use regex to match text that might be split across elements
-    const gameTypeText = screen.getByText(/ゲームタイプ:.*Bullet/, { exact: false });
-    expect(gameTypeText).toBeInTheDocument()
+    // Find game type info by role and content
+    const gameTypeInfo = screen.getByRole('heading', { name: '選択された対局情報' });
+    expect(gameTypeInfo).toBeInTheDocument();
+    
+    // Find game type text with Bullet (exact format from component)
+    const gameTypeText = screen.getByText('ゲームタイプ: Bullet');
+    expect(gameTypeText).toBeInTheDocument();
 
     // Verify game type icon
     const selectedGameIcon = screen.getAllByTestId('bullet-icon')[1] // Second bullet icon (in game details)
@@ -151,21 +155,32 @@ describe('ゲームタイプアイコンのテスト', () => {
     const fetchButton = screen.getByRole('button', { name: '取得' })
     await user.click(fetchButton)
 
-    // 全ゲームが描画されているかを確認（1ページ分の10件）
-    await screen.findByText(mockGames[0].date) // Wait for games to load
-    const initialGames = screen.getAllByRole('button').filter(button => 
-      button.textContent && /\d{4}\.\d{2}\.\d{2}/.test(button.textContent)
-    )
-    expect(initialGames).toHaveLength(10) // itemsPerPage is 10
+    // Wait for games to load and verify pagination
+    await screen.findByText(mockGames[0].date);
+    
+    // Get all game buttons (excluding navigation and filter buttons)
+    const gameButtons = screen.getAllByRole('button').filter(button => {
+      const text = button.textContent || '';
+      return mockGames.some(game => text.includes(game.date));
+    });
+    
+    // Should show first page of games (10 per page)
+    expect(gameButtons).toHaveLength(10);
 
     // Bulletアイコンをクリック
     const bulletIcon = await screen.findByTestId('filter-bullet-icon')
     await user.click(bulletIcon)
 
-    // Bulletのみが表示されているか確認（モックデータの1/4が Bullet）
-    const bulletGames = screen.getAllByRole('button', { name: new RegExp(mockGames[0].date) })
-    const expectedBulletGames = Math.min(10, Math.ceil(25/4)) // 25 total games, 4 types, max 10 per page
-    expect(bulletGames).toHaveLength(expectedBulletGames)
+    // Verify filtered Bullet games (should show all Bullet games up to page limit)
+    const bulletGames = screen.getAllByRole('button').filter(button =>
+      button.textContent?.match(/\d{4}\.\d{2}\.\d{2}/) && // Has a date
+      mockGames.some(game => 
+        game.gameType === 'Bullet' && 
+        button.textContent?.includes(game.date)
+      )
+    );
+    const expectedBulletGames = Math.min(10, mockGames.filter(g => g.gameType === 'Bullet').length);
+    expect(bulletGames).toHaveLength(expectedBulletGames);
     expect(bulletGames[0]).toHaveTextContent(mockGames[0].date)
 
     // 再度クリックでフィルタ解除
