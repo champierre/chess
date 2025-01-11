@@ -38,6 +38,7 @@ interface ChessMove {
 import {
   Pagination,
   PaginationContent,
+  PaginationEllipsis,
   PaginationItem,
   PaginationLink,
   PaginationNext,
@@ -187,13 +188,13 @@ function App() {
       
       console.log(`Found ${sortedArchives.length} archives to process`);
       
-      // Process archives until we have 100 games or run out of archives
+      // Calculate threshold date (90 days ago)
+      const now = new Date();
+      const thresholdDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+      console.log(`Fetching games after ${thresholdDate.toISOString()}`);
+      
+      // Process archives to get games from the last 90 days
       for (const archiveUrl of sortedArchives) {
-        if (allGames.length >= 100) {
-          console.log('Reached 100 games limit, stopping archive processing');
-          break;
-        }
-        
         const pgnResponse = await fetch(`${archiveUrl}/pgn`);
         const pgnText = await pgnResponse.text();
         
@@ -206,11 +207,6 @@ function App() {
 
         // Parse each game's metadata
         for (const gamePgn of games) {
-          if (allGames.length >= 100) {
-            console.log(`Reached 100 games limit while processing archive ${archiveUrl}`);
-            break;
-          }
-          
           const dateMatch = gamePgn.match(/\[Date "([^"]+)"/);
           const whiteMatch = gamePgn.match(/\[White "([^"]+)"/);
           const blackMatch = gamePgn.match(/\[Black "([^"]+)"/);
@@ -218,6 +214,14 @@ function App() {
           const timeControlMatch = gamePgn.match(/\[TimeControl "([^"]+)"/);
 
           if (dateMatch && whiteMatch && blackMatch && resultMatch) {
+            // Check if the game is within the last 90 days
+            const gameDate = new Date(dateMatch[1]);
+            if (gameDate < thresholdDate) {
+              // Skip games older than 90 days
+              continue;
+            }
+            
+            // Only add games within the last 90 days
             allGames.push({
               date: dateMatch[1],
               white: whiteMatch[1],
@@ -240,7 +244,7 @@ function App() {
       
       setGames(sortedGames);
       setCurrentPage(1); // Reset to first page when new games are fetched
-      setFeedback({ type: 'success', message: `${sortedGames.length}件の対局データを取得しました` });
+      setFeedback({ type: 'success', message: `過去90日間の対局を${sortedGames.length}件取得しました` });
     } catch (error) {
       console.error('Error fetching games:', error);
       setFeedback({ type: 'error', message: '対局データの取得に失敗しました' });
@@ -392,17 +396,72 @@ function App() {
                           前へ
                         </PaginationPrevious>
                       </PaginationItem>
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                        <PaginationItem key={page}>
-                          <PaginationLink
-                            onClick={() => setCurrentPage(page)}
-                            isActive={currentPage === page}
-                            aria-label={`${page}ページ目へ`}
-                          >
-                            {page}
-                          </PaginationLink>
-                        </PaginationItem>
-                      ))}
+                      {(() => {
+                        // ページネーション表示用のユーティリティ関数
+                        const getPageNumbers = (current: number, total: number): (number | 'ellipsis')[] => {
+                          if (total <= 7) {
+                            return Array.from({ length: total }, (_, i) => i + 1);
+                          }
+
+                          const pages: (number | 'ellipsis')[] = [];
+                          const delta = 2; // 現在のページの前後に表示するページ数
+
+                          // 最初のページは常に表示
+                          pages.push(1);
+
+                          // 現在のページの周辺のページを計算
+                          const leftBound = Math.max(2, current - delta);
+                          const rightBound = Math.min(total - 1, current + delta);
+
+                          // 左側の省略記号
+                          if (leftBound > 2) {
+                            pages.push('ellipsis');
+                          } else if (leftBound === 2) {
+                            pages.push(2);
+                          }
+
+                          // 現在のページの周辺
+                          for (let i = leftBound; i <= rightBound; i++) {
+                            if (i === leftBound && i > 2) {
+                              pages.push(i);
+                            } else if (i === rightBound && i < total - 1) {
+                              pages.push(i);
+                            } else if (i > leftBound && i < rightBound) {
+                              pages.push(i);
+                            }
+                          }
+
+                          // 右側の省略記号
+                          if (rightBound < total - 1) {
+                            pages.push('ellipsis');
+                          } else if (rightBound === total - 1) {
+                            pages.push(total - 1);
+                          }
+
+                          // 最後のページは常に表示
+                          if (total > 1) {
+                            pages.push(total);
+                          }
+
+                          return pages;
+                        };
+
+                        return getPageNumbers(currentPage, totalPages).map((page, idx) => (
+                          <PaginationItem key={`${idx}-${page}`}>
+                            {page === 'ellipsis' ? (
+                              <PaginationEllipsis />
+                            ) : (
+                              <PaginationLink
+                                onClick={() => setCurrentPage(page as number)}
+                                isActive={currentPage === page}
+                                aria-label={`${page}ページ目へ`}
+                              >
+                                {page}
+                              </PaginationLink>
+                            )}
+                          </PaginationItem>
+                        ));
+                      })()}
                       <PaginationItem>
                         <PaginationNext
                           onClick={() => setCurrentPage((prev: number) => Math.min(totalPages, prev + 1))}
