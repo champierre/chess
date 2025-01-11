@@ -18,12 +18,16 @@ vi.stubGlobal('Chessboard', mockChessboard)
 
 // モックゲームデータ
 // Set up a fixed base date for mock data
-const BASE_DATE = new Date('2024-01-15');
+const BASE_DATE = new Date('2024-01-15T12:00:00Z');  // Use UTC time to avoid timezone issues
 
 const mockGames = Array.from({ length: 25 }, (_, i) => {
   const date = new Date(BASE_DATE);
   date.setDate(date.getDate() - i);
-  const formattedDate = date.toISOString().split('T')[0].replace(/-/g, '.');
+  // Format date as YYYY.MM.DD
+  const year = date.getUTCFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(date.getUTCDate()).padStart(2, '0');
+  const formattedDate = `${year}.${month}.${day}`;
   
   const gameTypes = ['Bullet', 'Blitz', 'Rapid', 'Daily'];
   const timeControls = ['180', '600', '1800', '1/172800'];
@@ -73,17 +77,18 @@ describe('ゲームタイプアイコンのテスト', () => {
 
   beforeEach(async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true })
-    vi.setSystemTime(new Date('2024-01-15'))
+    vi.setSystemTime(new Date('2024-01-15T12:00:00Z'))
     await vi.runAllTimersAsync()
     vi.clearAllTimers()
     // APIレスポンスをモック
     vi.spyOn(global, 'fetch').mockImplementation((input: RequestInfo | URL, _init?: RequestInit) => {
       const url = typeof input === 'string' ? input : input.toString()
       if (url.includes('/archives')) {
-        const now = new Date();
-        const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const date = new Date('2024-01-15T12:00:00Z');  // Use the same fixed date
+        const year = date.getUTCFullYear();
+        const month = String(date.getUTCMonth() + 1).padStart(2, '0');
         return Promise.resolve({
+          ok: true,
           json: () => Promise.resolve({ 
             archives: [`https://api.chess.com/pub/player/test/games/${year}/${month}`] 
           })
@@ -91,6 +96,7 @@ describe('ゲームタイプアイコンのテスト', () => {
       }
       if (url.includes('/pgn')) {
         return Promise.resolve({
+          ok: true,
           text: () => Promise.resolve(mockGames.map(game => game.pgn).join('\n\n'))
         } as Response)
       }
@@ -99,7 +105,9 @@ describe('ゲームタイプアイコンのテスト', () => {
   })
 
   afterEach(() => {
+    vi.useRealTimers()
     vi.restoreAllMocks()
+    vi.clearAllTimers()
   })
 
   it('ゲームタイプに応じたアイコンが表示されることを確認', async () => {
@@ -215,7 +223,7 @@ describe('ゲームタイプアイコンのテスト', () => {
     const blitzIcon = screen.getByTestId('filter-blitz-icon')
     await user.click(blitzIcon)
     await screen.findByText(mockGames[1].date) // Wait for filtered games to load
-    vi.advanceTimersByTime(1000)
+    await vi.advanceTimersByTimeAsync(200)
     const blitzGames = screen.getAllByRole('button', { name: /.*/ }).filter(button => 
       button.textContent && button.textContent.includes(mockGames[1].date)
     )
@@ -332,7 +340,7 @@ describe('ページネーションのテスト', () => {
 
     // ゲームが読み込まれるのを待つ
     await screen.findByText(mockGames[0].date)
-    vi.advanceTimersByTime(1000)
+    await vi.advanceTimersByTimeAsync(200)
 
     // ページネーションの表示を確認
     const pagination = await screen.findByRole('navigation', { name: 'pagination' })
@@ -370,16 +378,17 @@ describe('ゲーム選択と情報表示のテスト', () => {
 
   beforeEach(async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true })
-    vi.setSystemTime(new Date('2024-01-15'))
+    vi.setSystemTime(new Date('2024-01-15T12:00:00Z'))
     await vi.runAllTimersAsync()
     // APIレスポンスをモック
     vi.spyOn(global, 'fetch').mockImplementation((input: RequestInfo | URL, _init?: RequestInit) => {
       const url = typeof input === 'string' ? input : input.toString()
       if (url.includes('/archives')) {
-        const now = new Date();
-        const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const date = new Date('2024-01-15T12:00:00Z');  // Use the same fixed date
+        const year = date.getUTCFullYear();
+        const month = String(date.getUTCMonth() + 1).padStart(2, '0');
         return Promise.resolve({
+          ok: true,
           json: () => Promise.resolve({ 
             archives: [`https://api.chess.com/pub/player/test/games/${year}/${month}`] 
           })
@@ -387,6 +396,7 @@ describe('ゲーム選択と情報表示のテスト', () => {
       }
       if (url.includes('/pgn')) {
         return Promise.resolve({
+          ok: true,
           text: () => Promise.resolve(mockGames.map(game => game.pgn).join('\n\n'))
         } as Response)
       }
@@ -395,7 +405,9 @@ describe('ゲーム選択と情報表示のテスト', () => {
   })
 
   afterEach(() => {
+    vi.useRealTimers()
     vi.restoreAllMocks()
+    vi.clearAllTimers()
   })
 
   it('ゲームを選択すると、ハイライトされ情報が表示されることを確認', async () => {
