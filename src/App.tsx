@@ -482,7 +482,7 @@ function App() {
                   onClick={() => loadPGN()} 
                   className="w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
                 >
-                  棋譜を読み込む
+                  読み込む
                 </button>
               </>
             )}
