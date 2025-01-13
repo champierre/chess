@@ -215,11 +215,12 @@ function App() {
 
           if (dateMatch && whiteMatch && blackMatch && resultMatch) {
             // Check if the game is within the last 90 days
-            // const gameDate = new Date(dateMatch[1]);
-            // if (gameDate < thresholdDate) {
-            //   // Skip games older than 90 days
-            //   continue;
-            // }
+            const gameDate = new Date(dateMatch[1].replace(/\./g, '-'));
+            console.log(`gameDate: ${dateMatch[1]}`);
+            if (gameDate < thresholdDate) {
+              // Skip games older than 90 days
+              continue;
+            }
             
             // Only add games within the last 90 days
             allGames.push({
@@ -239,12 +240,12 @@ function App() {
       
       // Sort games by date in reverse chronological order and take up to 100
       const sortedGames = allGames.sort((a, b) => {
-        return new Date(b.date).getTime() - new Date(a.date).getTime();
+        return new Date(b.date.replace(/\./g, '-')).getTime() - new Date(a.date.replace(/\./g, '-')).getTime();
       });
       
       setGames(sortedGames);
       setCurrentPage(1); // Reset to first page when new games are fetched
-      setFeedback({ type: 'success', message: `過去の対局を${sortedGames.length}件取得しました` });
+      setFeedback({ type: 'success', message: `過去90日間の対局を${sortedGames.length}件取得しました` });
     } catch (error) {
       console.error('Error fetching games:', error);
       setFeedback({ type: 'error', message: '対局データの取得に失敗しました' });
