@@ -79,7 +79,7 @@ describe('ゲームタイプアイコンのテスト', () => {
     vi.setSystemTime(new Date('2024-01-15'))
 
     // APIレスポンスをモック
-    vi.spyOn(global, 'fetch').mockImplementation((input: RequestInfo | URL, _init?: RequestInit) => {
+    vi.spyOn(global, 'fetch').mockImplementation((input: RequestInfo | URL) => {
       const url = typeof input === 'string' ? input : input.toString()
       if (url.includes('/archives')) {
         return Promise.resolve({
@@ -187,7 +187,7 @@ describe('ゲーム選択と情報表示のテスト', () => {
     vi.setSystemTime(new Date('2024-01-15'))
 
     // APIレスポンスをモック
-    vi.spyOn(global, 'fetch').mockImplementation((input: RequestInfo | URL, _init?: RequestInit) => {
+    vi.spyOn(global, 'fetch').mockImplementation((input: RequestInfo | URL) => {
       const url = typeof input === 'string' ? input : input.toString()
       if (url.includes('/archives')) {
         return Promise.resolve({
@@ -230,7 +230,7 @@ describe('ゲーム選択と情報表示のテスト', () => {
     expect(firstGameButton).toHaveClass('bg-blue-100')
 
     // ゲーム情報の表示を確認
-    const gameInfo = screen.getByText('選択された対局情報')
+    const gameInfo = screen.getByText('対局情報')
     expect(gameInfo).toBeInTheDocument()
 
     const dateInfo = screen.getByText('日付: 2024.01.01')
