@@ -491,7 +491,7 @@ function App() {
           <div>
             {selectedGame && (
               <div className="mb-4 p-2 bg-gray-100 rounded">
-                <p className="font-bold mb-1">選択された対局情報</p>
+                <p className="font-bold mb-1">対局情報</p>
                 <p>日付: {selectedGame.date}</p>
                 <p>結果: {selectedGame.result}</p>
                 <p>白: {selectedGame.white}, 黒: {selectedGame.black}</p>
