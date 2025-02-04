@@ -76,8 +76,17 @@ AssertionError: expected '' to be '評価中...' // Object.is equality
 - エラーハンドリングの強化
 
 ### 3. パフォーマンスの最適化
-- WebWorkerの処理の効率化
-- 不要な再レンダリングの防止
+✅ WebWorkerの処理の効率化
+- メッセージキューをMap型に変更し、FENごとの評価管理を実現
+- 評価リクエストのスロットリング機能を追加（100ms間隔）
+- エンジン初期化プロセスの最適化（Hash値の設定など）
+- エラーハンドリングとリカバリー機能の強化
+
+✅ 不要な再レンダリングの防止
+- Reactコンポーネントの最適化（useCallback, useMemo）
+  - nextMove, prevMove, evaluateCurrentPositionの関数をメモ化
+  - filteredGames, totalPages, paginatedGamesの計算をメモ化
+  - ページネーション関連の計算処理を最適化
 
 ## 技術的なメモ
 
