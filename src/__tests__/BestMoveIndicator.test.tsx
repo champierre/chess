@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import * as React from 'react'
+/** @jsxImportSource react */
 import { render, screen } from '@testing-library/react'
 import { BestMoveIndicator } from '../components/BestMoveIndicator'
 import type { ChessMove } from '../App'
