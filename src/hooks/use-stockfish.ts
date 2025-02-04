@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Chess } from 'chess.js';
-import Stockfish from 'stockfish';
+import Stockfish from '../../../node_modules/stockfish/src/stockfish.js';
 
 interface StockfishEvaluation {
   bestMove: string;
