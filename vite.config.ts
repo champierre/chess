@@ -2,7 +2,6 @@
 import { defineConfig } from "vite"
 import react from "@vitejs/plugin-react"
 import path from "path"
-import commonjs from '@rollup/plugin-commonjs'
 import type { UserConfig } from 'vite'
 import type { InlineConfig } from 'vitest'
 
@@ -20,11 +19,6 @@ export default defineConfig({
           ['@babel/plugin-transform-react-jsx', { runtime: 'automatic' }]
         ]
       }
-    }), 
-    commonjs({
-      transformMixedEsModules: true,
-      requireReturnsDefault: 'auto',
-      esmExternals: true
     })
   ],
   resolve: {
@@ -34,11 +28,7 @@ export default defineConfig({
   },
   build: {
     rollupOptions: {
-      external: [],
-    },
-    commonjsOptions: {
-      include: [/node_modules/],
-      transformMixedEsModules: true
+      external: []
     }
   },
   test: {
