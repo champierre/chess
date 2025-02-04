@@ -132,6 +132,5 @@ describe('Stockfish integration', () => {
     await waitFor(() => {
       expect(mockEvaluatePosition).toHaveBeenCalledTimes(2);
     }, { timeout: 3000 });
-    });
   });
 });
