@@ -11,7 +11,6 @@ describe('BestMoveIndicator', () => {
     flags: 'b',
     from: 'e2',
     to: 'e4',
-    lan: 'e2e4',
     san: 'e4',
     piece: 'p'
   }
