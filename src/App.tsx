@@ -341,13 +341,18 @@ function App() {
       const chessboard = (window as any).chessboard;
       if (chessboard && typeof chessboard.position === 'function') {
         setIsEvaluating(true);
-        chessboard.position(move ? move.after : 'start');
+        setCurrentMoveIsBest(false);
         setCurrentMove(prev => prev - 1);
-        await evaluateCurrentPosition();
-        setIsEvaluating(false);
+        chessboard.position(move ? move.after : 'start');
+        try {
+          await Promise.resolve(); // UIの更新を確実に反映
+          await evaluateCurrentPosition();
+        } finally {
+          setIsEvaluating(false);
+        }
       }
     }
-  }, [currentMove, mutableGameRef, evaluateCurrentPosition, setIsEvaluating]);
+  }, [currentMove, mutableGameRef, evaluateCurrentPosition, setIsEvaluating, setCurrentMoveIsBest]);
 
   return (
     <Toast.Provider swipeDirection="right">
