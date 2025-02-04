@@ -1,9 +1,8 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, test, expect, beforeEach } from 'vitest';
-import { vi, Mock } from 'vitest';
+import { vi } from 'vitest';
+import React from 'react';
 import App from './App';
-// Remove mutableBoardRef import as it's no longer exported
-import { StockfishService } from './services/stockfish';
 
 interface ChessboardConfig {
   position?: (fen: string) => void;
@@ -32,13 +31,31 @@ beforeEach(() => {
   mockPosition.mockClear();
   mockDestroy.mockClear();
   mockEvaluatePosition.mockClear();
+
+  // StockfishServiceのモックを設定
+  const mockStockfish = {
+    evaluatePosition: mockEvaluatePosition,
+    destroy: mockDestroy
+  };
+
+  // useRefのモックを設定
+  vi.spyOn(React, 'useRef').mockImplementation((initialValue) => {
+    if (initialValue === null) {
+      return { current: mockStockfish };
+    }
+    return { current: initialValue };
+  });
 });
 
 vi.mock('./services/stockfish', () => ({
-  StockfishService: vi.fn().mockImplementation(() => ({
-    evaluatePosition: mockEvaluatePosition,
-    destroy: mockDestroy
-  }))
+  StockfishService: vi.fn().mockImplementation(() => {
+    return {
+      evaluatePosition: vi.fn().mockImplementation(() => {
+        return Promise.resolve({ bestMove: 'e2e4', score: 0.5 });
+      }),
+      destroy: vi.fn()
+    };
+  })
 }));
 
 describe('Stockfish integration', () => {
@@ -68,10 +85,11 @@ describe('Stockfish integration', () => {
 
     // 最善手の表示を確認（非同期処理の完了を待つ）
     await waitFor(() => {
+      expect(screen.queryByTestId('evaluating')).not.toBeInTheDocument();
       const bestMoveIndicator = screen.getByTestId('best-move-indicator');
       expect(bestMoveIndicator).toBeInTheDocument();
       expect(bestMoveIndicator).toHaveAttribute('title', '最善手です');
-    }, { timeout: 3000 });
+    }, { timeout: 1000 });
   });
 
   test('evaluates position after each move', async () => {

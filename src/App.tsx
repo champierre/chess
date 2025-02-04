@@ -147,7 +147,9 @@ function App() {
   }, []);
 
   useEffect(() => {
-    stockfishRef.current = new StockfishService();
+    if (!stockfishRef.current) {
+      stockfishRef.current = new StockfishService();
+    }
     return () => {
       stockfishRef.current?.destroy();
     };
@@ -272,8 +274,9 @@ function App() {
       game.loadPgn(selectedPgn || pgn);
       mutableGameRef.current = game;
       setCurrentMove(0);
-      if (mutableBoardRef.current) {
-        mutableBoardRef.current.position('start');
+      const chessboard = (window as any).chessboard;
+      if (chessboard && typeof chessboard.position === 'function') {
+        chessboard.position('start');
       }
       setFeedback({ type: 'success', message: '棋譜を読み込みました' });
     } catch (error) {
