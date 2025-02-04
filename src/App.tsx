@@ -442,6 +442,7 @@ function App() {
                   {paginatedGames.map((game: Game, index: number) => (
                     <button
                       key={index}
+                      data-testid="game-item"
                       onClick={() => {
                         loadPGN(game.pgn);
                         setSelectedGame(game);
@@ -456,7 +457,10 @@ function App() {
                           {getResultIcon(game, username)}
                         </span>
                         {game.gameType && (
-                          <span className="text-lg">{getGameTypeIcon(game.gameType)}</span>
+                          <div className="flex items-center gap-2">
+                            <span data-testid="game-type" className="text-sm text-gray-600">{game.gameType}</span>
+                            <span className="text-lg">{getGameTypeIcon(game.gameType)}</span>
+                          </div>
                         )}
                       </div>
                       <span className="text-gray-600 flex items-center gap-1">
