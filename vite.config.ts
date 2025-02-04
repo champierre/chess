@@ -14,9 +14,17 @@ export default defineConfig({
   base: '/chess/',
   plugins: [
     react({
-      jsxRuntime: 'classic'
+      jsxRuntime: 'classic',
+      babel: {
+        plugins: [
+          ['@babel/plugin-transform-react-jsx', { runtime: 'automatic' }]
+        ]
+      }
     }), 
-    commonjs()
+    commonjs({
+      transformMixedEsModules: true,
+      requireReturnsDefault: 'auto'
+    })
   ],
   resolve: {
     alias: {
