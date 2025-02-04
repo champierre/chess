@@ -2,6 +2,7 @@
 import { defineConfig } from "vite"
 import react from "@vitejs/plugin-react"
 import path from "path"
+import commonjs from '@rollup/plugin-commonjs'
 import type { UserConfig } from 'vite'
 import type { InlineConfig } from 'vitest'
 
@@ -11,7 +12,7 @@ interface VitestConfigExport extends UserConfig {
 
 export default defineConfig({
   base: '/chess/',
-  plugins: [react()],
+  plugins: [react(), commonjs()],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
