@@ -68,9 +68,10 @@ describe('Stockfish integration', () => {
 
     // 評価中の状態を確認
     await waitFor(() => {
-      const evaluatingElement = screen.getByTestId('evaluating');
+      const evaluatingElement = screen.getByTestId('evaluation-status');
       expect(evaluatingElement).toBeInTheDocument();
-      expect(evaluatingElement).toHaveTextContent('評価中...');
+      const evaluatingText = evaluatingElement.textContent;
+      expect(evaluatingText).toContain('評価中...');
     }, { timeout: 3000 });
 
     // 評価が完了するまで待機
@@ -108,9 +109,10 @@ describe('Stockfish integration', () => {
     });
 
     await waitFor(() => {
-      const evaluatingElement = screen.getByTestId('evaluating');
+      const evaluatingElement = screen.getByTestId('evaluation-status');
       expect(evaluatingElement).toBeInTheDocument();
-      expect(evaluatingElement).toHaveTextContent('評価中...');
+      const evaluatingText = evaluatingElement.textContent;
+      expect(evaluatingText).toContain('評価中...');
     }, { timeout: 3000 });
 
     await waitFor(() => {
@@ -124,9 +126,10 @@ describe('Stockfish integration', () => {
     });
 
     await waitFor(() => {
-      const evaluatingElement = screen.getByTestId('evaluating');
+      const evaluatingElement = screen.getByTestId('evaluation-status');
       expect(evaluatingElement).toBeInTheDocument();
-      expect(evaluatingElement).toHaveTextContent('評価中...');
+      const evaluatingText = evaluatingElement.textContent;
+      expect(evaluatingText).toContain('評価中...');
     }, { timeout: 3000 });
 
     await waitFor(() => {
