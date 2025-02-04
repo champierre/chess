@@ -1,11 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Chess } from 'chess.js';
 
-declare const Stockfish: () => {
-  postMessage: (message: string) => void;
-  onmessage: ((event: { data: string }) => void) | null;
-  terminate: () => void;
-};
+import { Stockfish } from 'stockfish';
 
 interface StockfishEvaluation {
   bestMove: string;
@@ -13,11 +9,11 @@ interface StockfishEvaluation {
 }
 
 export function useStockfish() {
-  const [stockfish, setStockfish] = useState<ReturnType<typeof Stockfish> | null>(null);
+  const [stockfish, setStockfish] = useState<Stockfish | null>(null);
   const evaluationCache = useRef<Map<string, StockfishEvaluation>>(new Map());
 
   useEffect(() => {
-    const engine = Stockfish();
+    const engine = new Stockfish();
     engine.postMessage('uci');
     engine.postMessage('setoption name MultiPV value 1');
     setStockfish(engine);
@@ -34,8 +30,7 @@ export function useStockfish() {
         return resolve(evaluationCache.current.get(fen)!);
       }
 
-      stockfish.onmessage = (e: { data: string }) => {
-        const message = e.data;
+      const messageHandler = (message: string) => {
         if (message.includes('bestmove')) {
           const bestMove = message.split(' ')[1];
           const scoreMatch = message.match(/score cp (-?\d+)/);
@@ -43,10 +38,12 @@ export function useStockfish() {
           
           const evaluation = { bestMove, score };
           evaluationCache.current.set(fen, evaluation);
+          stockfish.removeMessageListener(messageHandler);
           resolve(evaluation);
         }
       };
 
+      stockfish.addMessageListener(messageHandler);
       stockfish.postMessage(`position fen ${fen}`);
       stockfish.postMessage('go depth 15');
     });
