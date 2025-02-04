@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import * as React from 'react';
+const { useEffect, useRef, useState } = React;
 import { Chess } from 'chess.js';
 
 declare const Stockfish: () => {
