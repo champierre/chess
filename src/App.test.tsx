@@ -58,17 +58,16 @@ describe('Stockfish integration', () => {
 
     // 次の手ボタンをクリック
     const nextButton = screen.getByLabelText('次の手');
+    
     await act(async () => {
       fireEvent.click(nextButton);
-    });
-
-    // 評価中の状態を確認
-    const evaluatingElement = screen.getByTestId('evaluation-status');
-    expect(evaluatingElement).toBeInTheDocument();
-    expect(evaluatingElement.textContent).toBe('評価中...');
-
-    // 評価が完了するまで待機
-    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 0));
+      // 評価中の状態を確認
+      const evaluatingElement = screen.getByTestId('evaluation-status');
+      expect(evaluatingElement).toBeInTheDocument();
+      expect(evaluatingElement.textContent).toBe('評価中...');
+      
+      // 評価が完了するまで待機
       await mockEvaluatePosition();
     });
 
@@ -92,6 +91,7 @@ describe('Stockfish integration', () => {
     // 最初の手
     await act(async () => {
       fireEvent.click(nextButton);
+      await new Promise(resolve => setTimeout(resolve, 0));
       
       // 評価中の状態を確認
       const evaluatingElement = screen.getByTestId('evaluation-status');
@@ -106,6 +106,7 @@ describe('Stockfish integration', () => {
     // 2回目の手
     await act(async () => {
       fireEvent.click(nextButton);
+      await Promise.resolve(); // UIの更新を待機
       
       // 評価中の状態を確認
       const evaluatingElement = screen.getByTestId('evaluation-status');

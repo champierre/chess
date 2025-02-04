@@ -323,9 +323,12 @@ function App() {
           setCurrentMoveIsBest(false);
           setCurrentMove(prev => prev + 1);
           chessboard.position(move.after);
-          evaluateCurrentPosition().finally(() => {
+          try {
+            await Promise.resolve(); // UIの更新を確実に反映
+            await evaluateCurrentPosition();
+          } finally {
             setIsEvaluating(false);
-          });
+          }
         }
       }
     }
@@ -642,6 +645,7 @@ function App() {
               >
                 <FontAwesomeIcon icon={faArrowsUpDown} />
               </button>
+<<<<<<< HEAD
               <div data-testid="evaluation-status" className="flex items-center bg-gray-100 px-4 py-2 rounded-lg">
                 <span className="text-gray-700 font-medium" data-testid="evaluation-text">
                   {isEvaluating && (
@@ -651,6 +655,15 @@ function App() {
                     </span>
                   )}
                 </span>
+||||||| parent of f91cd820 (test: 非同期処理の待機方法を改善し、評価状態の表示を修正)
+              <div data-testid="evaluation-status" className="flex items-center">
+                <span className="text-gray-500">{isEvaluating ? '評価中...' : ''}</span>
+=======
+              <div className="flex items-center">
+                <div data-testid="evaluation-status" className="text-gray-500">
+                  {isEvaluating ? '評価中...' : ''}
+                </div>
+>>>>>>> f91cd820 (test: 非同期処理の待機方法を改善し、評価状態の表示を修正)
                 {!isEvaluating && currentMoveIsBest && currentMove > 0 && (
                   <div className="text-green-600 font-medium flex items-center gap-1" title="最善手です" data-testid="best-move-indicator">
                     <FontAwesomeIcon icon={faCheck} />
