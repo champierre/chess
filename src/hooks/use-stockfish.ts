@@ -1,24 +1,40 @@
 import { useEffect, useRef, useState } from 'react';
 import { Chess } from 'chess.js';
 
-import { Stockfish } from 'stockfish';
-
 interface StockfishEvaluation {
   bestMove: string;
   score: number;
 }
 
+type StockfishInstance = {
+  postMessage: (message: string) => void;
+  addMessageListener: (callback: (message: string) => void) => void;
+  removeMessageListener: (callback: (message: string) => void) => void;
+  terminate: () => void;
+};
+
 export function useStockfish() {
-  const [stockfish, setStockfish] = useState<Stockfish | null>(null);
+  const [stockfish, setStockfish] = useState<StockfishInstance | null>(null);
   const evaluationCache = useRef<Map<string, StockfishEvaluation>>(new Map());
 
   useEffect(() => {
-    const engine = new Stockfish();
-    engine.postMessage('uci');
-    engine.postMessage('setoption name MultiPV value 1');
-    setStockfish(engine);
+    let engine: StockfishInstance | null = null;
+    
+    const initEngine = async () => {
+      const Stockfish = (await import('stockfish')).default;
+      engine = new Stockfish();
+      engine.postMessage('uci');
+      engine.postMessage('setoption name MultiPV value 1');
+      setStockfish(engine);
+    };
 
-    return () => engine.terminate();
+    initEngine();
+
+    return () => {
+      if (engine) {
+        engine.terminate();
+      }
+    };
   }, []);
 
   const evaluatePosition = async (game: Chess): Promise<StockfishEvaluation> => {
