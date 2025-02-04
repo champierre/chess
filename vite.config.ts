@@ -27,8 +27,13 @@ export default defineConfig({
       'Cross-Origin-Embedder-Policy': 'require-corp'
     },
     host: true,
-    strictPort: true
+    strictPort: true,
+    fs: {
+      strict: false,
+      allow: ['..']
+    }
   },
+  publicDir: 'public',
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
