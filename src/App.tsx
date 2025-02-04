@@ -595,7 +595,7 @@ function App() {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <p className="text-gray-600">日付</p>
-                    <p className="font-medium">{selectedGame.date}</p>
+                    <p data-testid="game-date" className="font-medium">{selectedGame.date}</p>
                   </div>
                   <div className="flex items-center justify-between">
                     <p className="text-gray-600">結果</p>
