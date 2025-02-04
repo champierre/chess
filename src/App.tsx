@@ -566,7 +566,7 @@ function App() {
               {isEvaluating ? (
                 <span className="text-gray-500 flex items-center">評価中...</span>
               ) : currentMoveIsBest && currentMove > 0 ? (
-                <div className="flex items-center text-green-500" title="最善手です">
+                <div className="flex items-center text-green-500" title="最善手です" data-testid="best-move-indicator">
                   <FontAwesomeIcon icon={faCheck} />
                 </div>
               ) : null}

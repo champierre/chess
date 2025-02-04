@@ -45,11 +45,12 @@ describe('Stockfish integration', () => {
       expect(screen.getByText('評価中...')).toBeInTheDocument();
     });
 
-    // 最善手の表示を確認
+    // 最善手の表示を確認（非同期処理の完了を待つ）
     await waitFor(() => {
-      const bestMoveIndicator = screen.getByTitle('最善手です');
+      const bestMoveIndicator = screen.getByTestId('best-move-indicator');
       expect(bestMoveIndicator).toBeInTheDocument();
-    });
+      expect(bestMoveIndicator).toHaveAttribute('title', '最善手です');
+    }, { timeout: 3000 });
   });
 
   test('evaluates position after each move', async () => {
