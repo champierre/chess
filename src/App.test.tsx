@@ -81,7 +81,7 @@ describe('Stockfish integration', () => {
 
     // 最善手の表示を確認
     await waitFor(() => {
-      expect(screen.queryByTestId('evaluating')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('evaluation-status')).toBeInTheDocument();
       const bestMoveIndicator = screen.getByTestId('best-move-indicator');
       expect(bestMoveIndicator).toBeInTheDocument();
       expect(bestMoveIndicator).toHaveAttribute('title', '最善手です');
