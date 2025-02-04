@@ -1,6 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { Chess } from 'chess.js';
-import Stockfish from 'stockfish';
+
+declare const Stockfish: () => {
+  postMessage: (message: string) => void;
+  onmessage: ((event: { data: string }) => void) | null;
+  terminate: () => void;
+};
 
 interface StockfishEvaluation {
   bestMove: string;
