@@ -54,9 +54,10 @@ describe('Stockfish integration', () => {
     const textarea = screen.getByPlaceholderText('ここにPGNをペーストしてください...');
     fireEvent.change(textarea, { target: { value: '1. e4 e5 2. Nf3 Nc6' } });
     const loadButton = screen.getByText('読み込む');
+    
     await act(async () => {
       fireEvent.click(loadButton);
-      await Promise.resolve();
+      await new Promise(resolve => setTimeout(resolve, 0));
     });
 
     // 次の手ボタンをクリック
@@ -64,27 +65,23 @@ describe('Stockfish integration', () => {
     
     await act(async () => {
       fireEvent.click(nextButton);
-      await Promise.resolve();
+      await new Promise(resolve => setTimeout(resolve, 0));
     });
 
     // 評価中の状態を確認
-    await waitFor(() => {
-      const evaluatingElement = screen.getByTestId('evaluation-status');
-      expect(evaluatingElement.textContent).toBe('評価中...');
-    }, { timeout: 1000 });
+    const evaluatingElement = screen.getByTestId('evaluation-status');
+    expect(evaluatingElement).toHaveTextContent('評価中...');
 
     // 評価が完了するまで待機
     await act(async () => {
       await mockEvaluatePosition();
-      await Promise.resolve();
+      await new Promise(resolve => setTimeout(resolve, 0));
     });
 
     // 最善手の表示を確認
-    await waitFor(() => {
-      const bestMoveIndicator = screen.getByTestId('best-move-indicator');
-      expect(bestMoveIndicator).toBeInTheDocument();
-      expect(bestMoveIndicator).toHaveAttribute('title', '最善手です');
-    }, { timeout: 1000 });
+    const bestMoveIndicator = screen.getByTestId('best-move-indicator');
+    expect(bestMoveIndicator).toBeInTheDocument();
+    expect(bestMoveIndicator).toHaveAttribute('title', '最善手です');
   });
 
   test('evaluates position after each move', async () => {
@@ -93,9 +90,10 @@ describe('Stockfish integration', () => {
     // PGNを入力して読み込み
     const textarea = screen.getByPlaceholderText('ここにPGNをペーストしてください...');
     fireEvent.change(textarea, { target: { value: '1. e4 e5 2. Nf3 Nc6' } });
+    
     await act(async () => {
       fireEvent.click(screen.getByText('読み込む'));
-      await Promise.resolve();
+      await new Promise(resolve => setTimeout(resolve, 0));
     });
 
     // 次の手を2回クリック
@@ -104,18 +102,16 @@ describe('Stockfish integration', () => {
     // 最初の手
     await act(async () => {
       fireEvent.click(nextButton);
-      await Promise.resolve();
+      await new Promise(resolve => setTimeout(resolve, 0));
     });
 
     // 評価中の状態を確認
-    await waitFor(() => {
-      const evaluatingElement = screen.getByTestId('evaluation-status');
-      expect(evaluatingElement.textContent).toBe('評価中...');
-    }, { timeout: 1000 });
+    const evaluatingElement = screen.getByTestId('evaluation-status');
+    expect(evaluatingElement).toHaveTextContent('評価中...');
 
     await act(async () => {
       await mockEvaluatePosition();
-      await Promise.resolve();
+      await new Promise(resolve => setTimeout(resolve, 0));
     });
 
     expect(mockEvaluatePosition).toHaveBeenCalledTimes(1);
@@ -123,20 +119,36 @@ describe('Stockfish integration', () => {
     // 2回目の手
     await act(async () => {
       fireEvent.click(nextButton);
-      await Promise.resolve();
+      await new Promise(resolve => setTimeout(resolve, 0));
     });
 
     // 評価中の状態を確認
-    await waitFor(() => {
-      const evaluatingElement = screen.getByTestId('evaluation-status');
-      expect(evaluatingElement.textContent).toBe('評価中...');
-    }, { timeout: 1000 });
+    expect(screen.getByTestId('evaluation-status')).toHaveTextContent('評価中...');
 
     await act(async () => {
       await mockEvaluatePosition();
-      await Promise.resolve();
+      await new Promise(resolve => setTimeout(resolve, 0));
     });
 
     expect(mockEvaluatePosition).toHaveBeenCalledTimes(2);
+  });
+
+  test('displays game type correctly', async () => {
+    render(<App />);
+    
+    const input = screen.getByPlaceholderText('Chess.com ユーザー名');
+    fireEvent.change(input, { target: { value: 'test' } });
+    
+    await act(async () => {
+      fireEvent.click(screen.getByText('取得'));
+      await new Promise(resolve => setTimeout(resolve, 0));
+    });
+
+    const gameTypeText = screen.getByText('ゲームタイプ');
+    const bulletText = screen.getByText('Bullet');
+    
+    expect(gameTypeText).toBeInTheDocument();
+    expect(bulletText).toBeInTheDocument();
+  });
   });
 });
