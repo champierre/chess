@@ -595,7 +595,10 @@ function App() {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <p className="text-gray-600">日付</p>
-                    <p data-testid="game-date" className="font-medium">{selectedGame.date}</p>
+                    <p data-testid="game-date" className="font-medium">{selectedGame?.date || ''}</p>
+                  </div>
+                  <div className="flex items-center justify-end">
+                    <p data-testid="evaluation-status" className="text-gray-500">{isEvaluating ? '評価中...' : ''}</p>
                   </div>
                   <div className="flex items-center justify-between">
                     <p className="text-gray-600">結果</p>

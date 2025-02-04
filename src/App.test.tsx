@@ -176,10 +176,8 @@ describe('Stockfish integration', () => {
     });
 
     // ゲーム情報の表示を確認
-    const dateElement = screen.getByText('日付');
-    expect(dateElement).toBeInTheDocument();
-    const dateValue = dateElement.nextElementSibling;
-    expect(dateValue).toHaveTextContent('2024.01.01');
+    const dateElement = screen.getByTestId('game-date');
+    expect(dateElement).toHaveTextContent('2024.02.04');
 
     // ゲームタイプの表示を確認（Bulletゲーム）
     const gameTypeElement = screen.getByTestId('game-type');
