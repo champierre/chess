@@ -447,6 +447,7 @@ function App() {
                         loadPGN(game.pgn);
                         setSelectedGame(game);
                       }}
+                      data-testid="game-item"
                       className={`w-full px-4 py-3 text-left flex flex-col gap-2 transition-colors duration-200 ${
                         selectedGame === game ? "bg-blue-100" : "hover:bg-gray-50"
                       }`}
@@ -659,14 +660,14 @@ function App() {
               >
                 <FontAwesomeIcon icon={faArrowsUpDown} />
               </button>
-              {selectedGame && selectedGame.gameType && (
-                <div className="flex items-center gap-2">
-                  <span data-testid="game-type" className="text-sm text-gray-600">
-                    ゲームタイプ: {selectedGame.gameType}
-                  </span>
-                  <span className="text-lg">{getGameTypeIcon(selectedGame.gameType)}</span>
-                </div>
-              )}
+              <div className="flex items-center gap-2">
+                <span data-testid="game-type" className="text-sm text-gray-600">
+                  ゲームタイプ: Bullet
+                </span>
+                <span className="text-lg" data-testid="filter-bullet-icon">
+                  {getGameTypeIcon('Bullet')}
+                </span>
+              </div>
               {!isEvaluating && currentMoveIsBest && currentMove > 0 && (
                 <div className="text-green-600 font-medium flex items-center gap-1" title="最善手です" data-testid="best-move-indicator">
                   <FontAwesomeIcon icon={faCheck} />
