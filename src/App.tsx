@@ -5,7 +5,7 @@ import { Chess } from 'chess.js';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import * as Toast from '@radix-ui/react-toast';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowsUpDown, faCheck, faXmark, faEquals, faBolt, faRocket, faStopwatch, faSun } from '@fortawesome/free-solid-svg-icons';
+import { faArrowsUpDown, faCheck, faXmark, faEquals, faBolt, faRocket, faStopwatch, faSun, faTimes, faUpload } from '@fortawesome/free-solid-svg-icons';
 import { StockfishService } from './services/stockfish';
 
 type ChessBoard = {
@@ -125,13 +125,24 @@ function App() {
   const mutableGameRef = gameRef as React.MutableRefObject<Chess | null>;
   
   const itemsPerPage = 10;
-  const filteredGames = selectedGameType
-    ? games.filter((game: Game) => game.gameType === selectedGameType)
-    : games;
-  const totalPages = Math.ceil(filteredGames.length / itemsPerPage);
-  const paginatedGames = filteredGames.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
+  const filteredGames = React.useMemo(() => 
+    selectedGameType
+      ? games.filter((game: Game) => game.gameType === selectedGameType)
+      : games,
+    [games, selectedGameType]
+  );
+  
+  const totalPages = React.useMemo(() => 
+    Math.ceil(filteredGames.length / itemsPerPage),
+    [filteredGames.length, itemsPerPage]
+  );
+  
+  const paginatedGames = React.useMemo(() => 
+    filteredGames.slice(
+      (currentPage - 1) * itemsPerPage,
+      currentPage * itemsPerPage
+    ),
+    [filteredGames, currentPage, itemsPerPage]
   );
 
   // Load saved username from localStorage
@@ -285,7 +296,7 @@ function App() {
     }
   };
 
-  const evaluateCurrentPosition = async () => {
+  const evaluateCurrentPosition = React.useCallback(async () => {
     if (!mutableGameRef.current || !stockfishRef.current) return;
     
     try {
@@ -299,9 +310,9 @@ function App() {
     } catch (error) {
       setFeedback({ type: 'error', message: '評価中にエラーが発生しました' });
     }
-  };
+  }, [currentMove, mutableGameRef, stockfishRef, setCurrentMoveIsBest, setFeedback]);
 
-  const nextMove = () => {
+  const nextMove = React.useCallback(() => {
     if (mutableGameRef.current && currentMove < mutableGameRef.current.history().length) {
       const moves = mutableGameRef.current.history({ verbose: true }) as ChessMove[];
       const move = moves[currentMove];
@@ -318,20 +329,22 @@ function App() {
         }
       }
     }
-  };
+  }, [currentMove, mutableGameRef, evaluateCurrentPosition, setIsEvaluating, setCurrentMoveIsBest]);
 
-  const prevMove = async () => {
+  const prevMove = React.useCallback(async () => {
     if (mutableGameRef.current && currentMove > 0) {
       const moves = mutableGameRef.current.history({ verbose: true }) as ChessMove[];
       const move = moves[currentMove - 2];
       const chessboard = (window as any).chessboard;
       if (chessboard && typeof chessboard.position === 'function') {
+        setIsEvaluating(true);
         chessboard.position(move ? move.after : 'start');
         setCurrentMove(prev => prev - 1);
         await evaluateCurrentPosition();
+        setIsEvaluating(false);
       }
     }
-  };
+  }, [currentMove, mutableGameRef, evaluateCurrentPosition, setIsEvaluating]);
 
   return (
     <Toast.Provider swipeDirection="right">
@@ -458,54 +471,49 @@ function App() {
                         </PaginationPrevious>
                       </PaginationItem>
                       {(() => {
-                        // ページネーション表示用のユーティリティ関数
-                        const getPageNumbers = (current: number, total: number): (number | 'ellipsis')[] => {
-                          if (total <= 7) {
-                            return Array.from({ length: total }, (_, i) => i + 1);
-                          }
-
-                          const pages: (number | 'ellipsis')[] = [];
-                          const delta = 2; // 現在のページの前後に表示するページ数
-
-                          // 最初のページは常に表示
-                          pages.push(1);
-
-                          // 現在のページの周辺のページを計算
-                          const leftBound = Math.max(2, current - delta);
-                          const rightBound = Math.min(total - 1, current + delta);
-
-                          // 左側の省略記号
-                          if (leftBound > 2) {
-                            pages.push('ellipsis');
-                          } else if (leftBound === 2) {
-                            pages.push(2);
-                          }
-
-                          // 現在のページの周辺
-                          for (let i = leftBound; i <= rightBound; i++) {
-                            if (i === leftBound && i > 2) {
-                              pages.push(i);
-                            } else if (i === rightBound && i < total - 1) {
-                              pages.push(i);
-                            } else if (i > leftBound && i < rightBound) {
-                              pages.push(i);
+                        const getPageNumbers = React.useMemo(() => {
+                          return (current: number, total: number): (number | 'ellipsis')[] => {
+                            if (total <= 7) {
+                              return Array.from({ length: total }, (_, i) => i + 1);
                             }
-                          }
 
-                          // 右側の省略記号
-                          if (rightBound < total - 1) {
-                            pages.push('ellipsis');
-                          } else if (rightBound === total - 1) {
-                            pages.push(total - 1);
-                          }
+                            const pages: (number | 'ellipsis')[] = [];
+                            const delta = 2;
 
-                          // 最後のページは常に表示
-                          if (total > 1) {
-                            pages.push(total);
-                          }
+                            pages.push(1);
 
-                          return pages;
-                        };
+                            const leftBound = Math.max(2, current - delta);
+                            const rightBound = Math.min(total - 1, current + delta);
+
+                            if (leftBound > 2) {
+                              pages.push('ellipsis');
+                            } else if (leftBound === 2) {
+                              pages.push(2);
+                            }
+
+                            for (let i = leftBound; i <= rightBound; i++) {
+                              if (i === leftBound && i > 2) {
+                                pages.push(i);
+                              } else if (i === rightBound && i < total - 1) {
+                                pages.push(i);
+                              } else if (i > leftBound && i < rightBound) {
+                                pages.push(i);
+                              }
+                            }
+
+                            if (rightBound < total - 1) {
+                              pages.push('ellipsis');
+                            } else if (rightBound === total - 1) {
+                              pages.push(total - 1);
+                            }
+
+                            if (total > 1) {
+                              pages.push(total);
+                            }
+
+                            return pages;
+                          };
+                        }, []);
 
                         return getPageNumbers(currentPage, totalPages).map((page, idx) => (
                           <PaginationItem key={`${idx}-${page}`}>
