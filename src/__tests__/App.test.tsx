@@ -3,6 +3,13 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import App from '../App'
 
+// use-stockfishのモック
+vi.mock('../hooks/use-stockfish', () => ({
+  useStockfish: () => ({
+    evaluatePosition: () => Promise.resolve({ bestMove: 'e4', score: 100 })
+  })
+}))
+
 // モックとして chessboard.js を扱う
 const mockFlip = vi.fn()
 const mockPosition = vi.fn()
