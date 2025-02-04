@@ -312,7 +312,7 @@ function App() {
     }
   }, [currentMove, mutableGameRef, stockfishRef, setCurrentMoveIsBest, setFeedback]);
 
-  const nextMove = React.useCallback(() => {
+  const nextMove = React.useCallback(async () => {
     if (mutableGameRef.current && currentMove < mutableGameRef.current.history().length) {
       const moves = mutableGameRef.current.history({ verbose: true }) as ChessMove[];
       const move = moves[currentMove];
