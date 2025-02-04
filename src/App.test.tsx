@@ -69,7 +69,8 @@ describe('Stockfish integration', () => {
     expect(dateText).toMatch(/\d{4}\.\d{2}\.\d{2}/);
     
     // aria-labelの確認
-    expect(dateElement).toHaveAttribute('aria-label', `日付: ${dateText}`);
+    const expectedLabel = `日付: ${dateText}`;
+    expect(dateElement).toHaveAttribute('aria-label', expectedLabel);
   });
 
   test('shows best move indicator when move is optimal', async () => {
