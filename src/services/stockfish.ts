@@ -25,10 +25,19 @@ export class StockfishService {
   }
 
   private initializeWorker() {
-    this.worker = new Worker('/node_modules/stockfish/stockfish.js');
-    this.worker.onmessage = this.handleMessage.bind(this);
-    this.worker.onerror = this.handleError.bind(this);
-    this.initializeEngine();
+    try {
+      const workerUrl = new URL('/chess/stockfish.js', window.location.origin);
+      this.worker = new Worker(workerUrl.toString(), {
+        type: 'module',
+        name: 'stockfish-worker'
+      });
+      this.worker.onmessage = this.handleMessage.bind(this);
+      this.worker.onerror = this.handleError.bind(this);
+      this.initializeEngine();
+    } catch (error) {
+      console.error('Failed to initialize Stockfish worker:', error);
+      throw new Error('Stockfish initialization failed');
+    }
   }
 
   private initializeEngine() {
