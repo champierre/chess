@@ -17,6 +17,14 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    commonjsOptions: {
+      include: [/stockfish/, /node_modules/],
+    },
+  },
+  optimizeDeps: {
+    include: ['stockfish'],
+  },
   test: {
     environment: 'jsdom',
     globals: true,
