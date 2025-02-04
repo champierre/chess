@@ -49,6 +49,19 @@ export default defineConfig({
   build: {
     rollupOptions: {
       external: []
+    },
+    assetsInlineLimit: 0
+  },
+  server: {
+    headers: {
+      'Cross-Origin-Embedder-Policy': 'require-corp',
+      'Cross-Origin-Opener-Policy': 'same-origin'
+    },
+    host: true,
+    strictPort: true,
+    fs: {
+      strict: false,
+      allow: ['..']
     }
   },
   test: {

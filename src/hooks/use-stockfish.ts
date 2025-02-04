@@ -6,33 +6,30 @@ interface StockfishEvaluation {
   score: number;
 }
 
-type StockfishInstance = {
-  postMessage: (message: string) => void;
-  addMessageListener: (callback: (message: string) => void) => void;
-  removeMessageListener: (callback: (message: string) => void) => void;
-  terminate: () => void;
-};
-
 export function useStockfish() {
-  const [stockfish, setStockfish] = useState<StockfishInstance | null>(null);
+  const [stockfish, setStockfish] = useState<Worker | null>(null);
   const evaluationCache = useRef<Map<string, StockfishEvaluation>>(new Map());
+  const workerRef = useRef<Worker | null>(null);
 
   useEffect(() => {
-    let engine: StockfishInstance | null = null;
-    
-    const initEngine = async () => {
-      const Stockfish = (await import('stockfish')).default;
-      engine = new Stockfish();
-      engine.postMessage('uci');
-      engine.postMessage('setoption name MultiPV value 1');
-      setStockfish(engine);
-    };
-
-    initEngine();
+    try {
+      const worker = new Worker('/chess/stockfish.js');
+      workerRef.current = worker;
+      setStockfish(worker);
+      
+      worker.addEventListener('message', (e) => {
+        console.log('Stockfish:', e.data);
+      });
+      
+      worker.postMessage('uci');
+      worker.postMessage('setoption name MultiPV value 1');
+    } catch (error) {
+      console.error('Failed to initialize Stockfish worker:', error);
+    }
 
     return () => {
-      if (engine) {
-        engine.terminate();
+      if (workerRef.current) {
+        workerRef.current.terminate();
       }
     };
   }, []);
@@ -54,12 +51,12 @@ export function useStockfish() {
           
           const evaluation = { bestMove, score };
           evaluationCache.current.set(fen, evaluation);
-          stockfish.removeMessageListener(messageHandler);
+          stockfish.removeEventListener('message', messageHandler);
           resolve(evaluation);
         }
       };
 
-      stockfish.addMessageListener(messageHandler);
+      stockfish.addEventListener('message', messageHandler);
       stockfish.postMessage(`position fen ${fen}`);
       stockfish.postMessage('go depth 15');
     });
