@@ -32,12 +32,6 @@ export default defineConfig({
     fs: {
       strict: false,
       allow: ['..']
-    },
-    proxy: {
-      '/chess/stockfish.js': {
-        target: 'http://localhost:5173',
-        rewrite: (path) => path.replace(/^\/chess/, '')
-      }
     }
   },
   publicDir: 'public',
@@ -51,18 +45,6 @@ export default defineConfig({
       external: []
     },
     assetsInlineLimit: 0
-  },
-  server: {
-    headers: {
-      'Cross-Origin-Embedder-Policy': 'require-corp',
-      'Cross-Origin-Opener-Policy': 'same-origin'
-    },
-    host: true,
-    strictPort: true,
-    fs: {
-      strict: false,
-      allow: ['..']
-    }
   },
   test: {
     environment: 'jsdom',
