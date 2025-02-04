@@ -1,4 +1,4 @@
-declare module '../../../node_modules/stockfish/src/stockfish.js' {
+declare module 'stockfish/src/stockfish.js' {
   type StockfishInstance = {
     postMessage: (message: string) => void;
     onmessage: ((event: { data: string }) => void) | null;

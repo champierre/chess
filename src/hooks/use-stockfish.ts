@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Chess } from 'chess.js';
-import Stockfish from '../../../node_modules/stockfish/src/stockfish.js';
+import Stockfish from 'stockfish/src/stockfish.js';
 
 interface StockfishEvaluation {
   bestMove: string;
@@ -29,7 +29,7 @@ export function useStockfish() {
         return resolve(evaluationCache.current.get(fen)!);
       }
 
-      stockfish.onmessage = (e) => {
+      stockfish.onmessage = (e: { data: string }) => {
         const message = e.data;
         if (message.includes('bestmove')) {
           const bestMove = message.split(' ')[1];
