@@ -54,27 +54,34 @@ describe('Stockfish integration', () => {
     const textarea = screen.getByPlaceholderText('ここにPGNをペーストしてください...');
     fireEvent.change(textarea, { target: { value: '1. e4 e5 2. Nf3 Nc6' } });
     const loadButton = screen.getByText('読み込む');
-    fireEvent.click(loadButton);
+    await act(async () => {
+      fireEvent.click(loadButton);
+    });
 
     // 次の手ボタンをクリック
     const nextButton = screen.getByLabelText('次の手');
     
     await act(async () => {
       fireEvent.click(nextButton);
-      await new Promise(resolve => setTimeout(resolve, 0));
-      // 評価中の状態を確認
+    });
+
+    // 評価中の状態を確認
+    await waitFor(() => {
       const evaluatingElement = screen.getByTestId('evaluation-status');
-      expect(evaluatingElement).toBeInTheDocument();
       expect(evaluatingElement.textContent).toBe('評価中...');
-      
-      // 評価が完了するまで待機
+    });
+
+    // 評価が完了するまで待機
+    await act(async () => {
       await mockEvaluatePosition();
     });
 
     // 最善手の表示を確認
-    const bestMoveIndicator = screen.getByTestId('best-move-indicator');
-    expect(bestMoveIndicator).toBeInTheDocument();
-    expect(bestMoveIndicator).toHaveAttribute('title', '最善手です');
+    await waitFor(() => {
+      const bestMoveIndicator = screen.getByTestId('best-move-indicator');
+      expect(bestMoveIndicator).toBeInTheDocument();
+      expect(bestMoveIndicator).toHaveAttribute('title', '最善手です');
+    });
   });
 
   test('evaluates position after each move', async () => {
@@ -83,7 +90,9 @@ describe('Stockfish integration', () => {
     // PGNを入力して読み込み
     const textarea = screen.getByPlaceholderText('ここにPGNをペーストしてください...');
     fireEvent.change(textarea, { target: { value: '1. e4 e5 2. Nf3 Nc6' } });
-    fireEvent.click(screen.getByText('読み込む'));
+    await act(async () => {
+      fireEvent.click(screen.getByText('読み込む'));
+    });
 
     // 次の手を2回クリック
     const nextButton = screen.getByLabelText('次の手');
@@ -91,13 +100,15 @@ describe('Stockfish integration', () => {
     // 最初の手
     await act(async () => {
       fireEvent.click(nextButton);
-      await new Promise(resolve => setTimeout(resolve, 0));
-      
-      // 評価中の状態を確認
+    });
+
+    // 評価中の状態を確認
+    await waitFor(() => {
       const evaluatingElement = screen.getByTestId('evaluation-status');
-      expect(evaluatingElement).toBeInTheDocument();
       expect(evaluatingElement.textContent).toBe('評価中...');
-      
+    });
+
+    await act(async () => {
       await mockEvaluatePosition();
     });
 
@@ -106,13 +117,15 @@ describe('Stockfish integration', () => {
     // 2回目の手
     await act(async () => {
       fireEvent.click(nextButton);
-      await Promise.resolve(); // UIの更新を待機
-      
-      // 評価中の状態を確認
+    });
+
+    // 評価中の状態を確認
+    await waitFor(() => {
       const evaluatingElement = screen.getByTestId('evaluation-status');
-      expect(evaluatingElement).toBeInTheDocument();
       expect(evaluatingElement.textContent).toBe('評価中...');
-      
+    });
+
+    await act(async () => {
       await mockEvaluatePosition();
     });
 
