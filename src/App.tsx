@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import './App.css';
 import type { JSX } from 'react';
 import { Chess } from 'chess.js';
+import { useStockfish } from './hooks/use-stockfish';
+import { BestMoveIndicator } from './components/BestMoveIndicator';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import * as Toast from '@radix-ui/react-toast';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -25,7 +27,7 @@ declare global {
   }
 }
 
-interface ChessMove {
+export interface ChessMove {
   after: string;
   before: string;
   color: 'w' | 'b';
@@ -112,6 +114,8 @@ function App() {
   const [games, setGames] = useState<Game[]>([]);
   const [selectedGame, setSelectedGame] = useState<Game | null>(null);
   const [selectedGameType, setSelectedGameType] = useState<'Bullet' | 'Blitz' | 'Rapid' | 'Daily' | null>(null);
+  const { evaluatePosition } = useStockfish();
+  const [currentEvaluation, setCurrentEvaluation] = useState<{ bestMove: string; score: number } | null>(null);
   const boardRef = useRef<ChessBoard | null>(null);
   const gameRef = useRef<Chess | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -271,12 +275,17 @@ function App() {
     }
   };
 
-  const nextMove = () => {
+  const nextMove = async () => {
     if (mutableGameRef.current && currentMove < mutableGameRef.current.history().length && mutableBoardRef.current) {
       const moves = mutableGameRef.current.history({ verbose: true }) as ChessMove[];
       const move = moves[currentMove];
       if (move) {
         mutableBoardRef.current.position(move.after);
+        
+        // 現在の局面を評価
+        const evaluation = await evaluatePosition(mutableGameRef.current);
+        setCurrentEvaluation(evaluation);
+        
         setCurrentMove(prev => prev + 1);
       }
     }
@@ -503,34 +512,42 @@ function App() {
               </div>
             )}
             <div ref={containerRef} className="mb-4" />
-            <div className="flex justify-center gap-4">
-              <button 
-                onClick={prevMove}
-                className="bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600"
-                aria-label="前の手"
-              >
-                <ArrowLeft size={24} />
-              </button>
-              <button 
-                onClick={nextMove}
-                className="bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600"
-                aria-label="次の手"
-              >
-                <ArrowRight size={24} />
-              </button>
-              <button
-                onClick={() => {
-                  if (mutableBoardRef.current) {
-                    mutableBoardRef.current.flip();
-                    setIsFlipped(!isFlipped);
-                  }
-                }}
-                className="bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600"
-                title="盤の上下反転"
-                aria-label="盤の上下反転"
-              >
-                <FontAwesomeIcon icon={faArrowsUpDown} />
-              </button>
+            <div className="flex flex-col items-center gap-4">
+              <div className="flex justify-center gap-4">
+                <button 
+                  onClick={prevMove}
+                  className="bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600"
+                  aria-label="前の手"
+                >
+                  <ArrowLeft size={24} />
+                </button>
+                <button 
+                  onClick={nextMove}
+                  className="bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600"
+                  aria-label="次の手"
+                >
+                  <ArrowRight size={24} />
+                </button>
+                <button
+                  onClick={() => {
+                    if (mutableBoardRef.current) {
+                      mutableBoardRef.current.flip();
+                      setIsFlipped(!isFlipped);
+                    }
+                  }}
+                  className="bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600"
+                  title="盤の上下反転"
+                  aria-label="盤の上下反転"
+                >
+                  <FontAwesomeIcon icon={faArrowsUpDown} />
+                </button>
+              </div>
+              {currentMove > 0 && currentEvaluation && mutableGameRef.current && (
+                <BestMoveIndicator
+                  currentMove={mutableGameRef.current.history({ verbose: true })[currentMove - 1]}
+                  evaluation={currentEvaluation}
+                />
+              )}
             </div>
           </div>
         </div>

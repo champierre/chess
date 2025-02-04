@@ -1,7 +1,16 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+// @ts-expect-error - React is used by JSX
+import React from 'react'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import App from '../App'
+
+// use-stockfishのモック
+vi.mock('../hooks/use-stockfish', () => ({
+  useStockfish: () => ({
+    evaluatePosition: () => Promise.resolve({ bestMove: 'e4', score: 100 })
+  })
+}))
 
 // モックとして chessboard.js を扱う
 const mockFlip = vi.fn()
