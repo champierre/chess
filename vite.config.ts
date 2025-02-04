@@ -15,7 +15,11 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      'stockfish': '/node_modules/stockfish/stockfish.js'
     },
+  },
+  worker: {
+    format: 'iife',
   },
   test: {
     environment: 'jsdom',

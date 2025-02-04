@@ -16,7 +16,7 @@ export class StockfishService {
   }> = [];
 
   constructor() {
-    this.worker = new Worker(new URL('stockfish', import.meta.url));
+    this.worker = new Worker('/node_modules/stockfish/stockfish.js');
     this.worker.onmessage = this.handleMessage.bind(this);
     this.worker.onerror = this.handleError.bind(this);
     this.initializeEngine();

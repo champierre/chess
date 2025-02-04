@@ -5,10 +5,13 @@ import App from './App';
 import { StockfishService } from './services/stockfish';
 
 // Chessboardのモック
-vi.stubGlobal('Chessboard', () => ({
-  position: vi.fn(),
-  destroy: vi.fn()
-}));
+vi.stubGlobal('Chessboard', (container, config) => {
+  return {
+    position: vi.fn(),
+    destroy: vi.fn(),
+    ...config
+  };
+});
 
 vi.mock('./services/stockfish', () => ({
   StockfishService: vi.fn().mockImplementation(() => ({
