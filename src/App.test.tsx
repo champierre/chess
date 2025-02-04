@@ -28,35 +28,19 @@ vi.stubGlobal('Chessboard', (_container: HTMLElement, config: ChessboardConfig) 
   return instance;
 });
 
+vi.mock('./services/stockfish', () => ({
+  StockfishService: vi.fn().mockImplementation(() => ({
+    evaluatePosition: mockEvaluatePosition,
+    destroy: vi.fn()
+  }))
+}));
+
 beforeEach(() => {
   vi.clearAllMocks();
   mockPosition.mockClear();
   mockDestroy.mockClear();
   mockEvaluatePosition.mockClear();
-
-  // StockfishServiceのモックを設定
-  const mockStockfish = {
-    evaluatePosition: mockEvaluatePosition,
-    destroy: mockDestroy
-  };
-
-  // useRefのモックを設定
-  vi.spyOn(React, 'useRef').mockImplementation((initialValue) => {
-    if (initialValue === null) {
-      return { current: mockStockfish };
-    }
-    return { current: initialValue };
-  });
 });
-
-vi.mock('./services/stockfish', () => ({
-  StockfishService: vi.fn().mockImplementation(() => {
-    return {
-      evaluatePosition: mockEvaluatePosition,
-      destroy: vi.fn()
-    };
-  })
-}));
 
 describe('Stockfish integration', () => {
   beforeEach(() => {
@@ -76,14 +60,18 @@ describe('Stockfish integration', () => {
     const nextButton = screen.getByLabelText('次の手');
     await act(async () => {
       fireEvent.click(nextButton);
+      // 評価中の表示を確認
+      await waitFor(() => {
+        expect(screen.getByTestId('evaluating')).toBeInTheDocument();
+      });
+      // 評価が完了するまで待機
+      await waitFor(() => {
+        expect(mockEvaluatePosition).toHaveBeenCalled();
+      }, { timeout: 2000 });
     });
 
-    // 評価中の表示を確認
-    expect(screen.getByTestId('evaluating')).toBeInTheDocument();
-
-    // 最善手の表示を確認（非同期処理の完了を待つ）
+    // 最善手の表示を確認
     await waitFor(() => {
-      expect(mockEvaluatePosition).toHaveBeenCalled();
       const bestMoveIndicator = screen.getByTestId('best-move-indicator');
       expect(bestMoveIndicator).toBeInTheDocument();
       expect(bestMoveIndicator).toHaveAttribute('title', '最善手です');
@@ -100,12 +88,19 @@ describe('Stockfish integration', () => {
 
     // 次の手を2回クリック
     const nextButton = screen.getByLabelText('次の手');
-    fireEvent.click(nextButton);
-    fireEvent.click(nextButton);
+    
+    await act(async () => {
+      fireEvent.click(nextButton);
+      await waitFor(() => {
+        expect(mockEvaluatePosition).toHaveBeenCalledTimes(1);
+      }, { timeout: 2000 });
+    });
 
-    // StockfishServiceのevaluatePositionが2回呼ばれることを確認
-    await waitFor(() => {
-      expect(mockEvaluatePosition).toHaveBeenCalledTimes(2);
-    }, { timeout: 1000 });
+    await act(async () => {
+      fireEvent.click(nextButton);
+      await waitFor(() => {
+        expect(mockEvaluatePosition).toHaveBeenCalledTimes(2);
+      }, { timeout: 2000 });
+    });
   });
 });

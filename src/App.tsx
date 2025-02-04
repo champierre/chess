@@ -288,7 +288,6 @@ function App() {
   const evaluateCurrentPosition = async () => {
     if (!mutableGameRef.current || !stockfishRef.current) return;
     
-    setIsEvaluating(true);
     try {
       const fen = mutableGameRef.current.fen();
       const evaluation = await stockfishRef.current.evaluatePosition(fen);
@@ -299,8 +298,6 @@ function App() {
       }
     } catch (error) {
       setFeedback({ type: 'error', message: '評価中にエラーが発生しました' });
-    } finally {
-      setIsEvaluating(false);
     }
   };
 
@@ -315,7 +312,11 @@ function App() {
           setCurrentMove(prev => prev + 1);
           chessboard.position(move.after);
           setIsEvaluating(true);
-          await evaluateCurrentPosition();
+          try {
+            await evaluateCurrentPosition();
+          } finally {
+            setIsEvaluating(false);
+          }
         }
       }
     }
