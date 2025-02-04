@@ -309,10 +309,10 @@ function App() {
         // グローバルなChessboardインスタンスを使用
         const chessboard = (window as any).chessboard;
         if (chessboard && typeof chessboard.position === 'function') {
-          setCurrentMove(prev => prev + 1);
-          chessboard.position(move.after);
           setIsEvaluating(true);
           try {
+            chessboard.position(move.after);
+            setCurrentMove(prev => prev + 1);
             await evaluateCurrentPosition();
           } finally {
             setIsEvaluating(false);
