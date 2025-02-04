@@ -13,7 +13,9 @@ interface ChessboardConfig {
 // Chessboardのモック
 const mockPosition = vi.fn();
 const mockDestroy = vi.fn();
-const mockEvaluatePosition = vi.fn().mockResolvedValue({ bestMove: 'e2e4', score: 0.5 });
+const mockEvaluatePosition = vi.fn().mockImplementation(() => {
+  return Promise.resolve({ bestMove: 'e2e4', score: 0.5 });
+});
 
 vi.stubGlobal('Chessboard', (_container: HTMLElement, config: ChessboardConfig) => {
   const instance = {
@@ -45,10 +47,6 @@ beforeEach(() => {
     }
     return { current: initialValue };
   });
-});
-
-const mockEvaluatePosition = vi.fn().mockImplementation(() => {
-  return Promise.resolve({ bestMove: 'e2e4', score: 0.5 });
 });
 
 vi.mock('./services/stockfish', () => ({
