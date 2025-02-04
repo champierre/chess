@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, act } from '@testing-library/react';
+import { render, screen, fireEvent, act, within } from '@testing-library/react';
 import { describe, test, expect, beforeEach } from 'vitest';
 import { vi } from 'vitest';
 import App from './App';
@@ -71,13 +71,22 @@ describe('Stockfish integration', () => {
       await new Promise(resolve => setTimeout(resolve, 0));
     });
 
+    // PGNの読み込みが完了するまで待機
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 100));
+    });
+
+    // ゲーム情報セクションの存在を確認
+    const gameInfo = screen.getByTestId('game-info');
+    expect(gameInfo).toBeInTheDocument();
+
     // 日付要素の存在を確認
-    const dateElement = screen.getByTestId('game-date');
+    const dateElement = within(gameInfo).getByTestId('game-date');
     expect(dateElement).toBeInTheDocument();
     expect(dateElement).toHaveTextContent('2024.02.04');
     
     // 日付ラベルの存在を確認
-    const dateLabel = screen.getByText('日付');
+    const dateLabel = within(gameInfo).getByText('日付');
     expect(dateLabel).toBeInTheDocument();
   });
 
