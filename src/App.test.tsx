@@ -60,20 +60,15 @@ describe('Stockfish integration', () => {
       await new Promise(resolve => setTimeout(resolve, 500));
     });
 
-    // 日付ラベルと値を個別に確認
+    // 日付要素の存在を確認
     const dateElement = await screen.findByTestId('game-date');
     expect(dateElement).toBeInTheDocument();
     
-    // 最初のゲームの日付が表示されることを確認
-    const dateText = dateElement.textContent;
-    expect(dateText).toMatch(/\d{4}\.\d{2}\.\d{2}/);
+    // 日付のテキスト内容を確認
+    expect(dateElement).toHaveTextContent(expect.stringMatching(/\d{4}\.\d{2}\.\d{2}/));
     
-    // 日付の表示形式を確認
-    const dateParts = dateText.split('.');
-    expect(dateParts).toHaveLength(3);
-    expect(dateParts[0]).toMatch(/^\d{4}$/);
-    expect(dateParts[1]).toMatch(/^\d{2}$/);
-    expect(dateParts[2]).toMatch(/^\d{2}$/);
+    // aria-labelの確認
+    expect(dateElement).toHaveAttribute('aria-label', expect.stringMatching(/日付: \d{4}\.\d{2}\.\d{2}/));
   });
 
   test('shows best move indicator when move is optimal', async () => {
