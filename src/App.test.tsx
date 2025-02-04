@@ -1,11 +1,17 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, test, expect, beforeEach } from 'vitest';
-import { vi } from 'vitest';
+import { vi, Mock } from 'vitest';
 import App from './App';
 import { StockfishService } from './services/stockfish';
 
+interface ChessboardConfig {
+  position?: (fen: string) => void;
+  destroy?: () => void;
+  [key: string]: any;
+}
+
 // Chessboardのモック
-vi.stubGlobal('Chessboard', (container, config) => {
+vi.stubGlobal('Chessboard', (_container: HTMLElement, config: ChessboardConfig) => {
   return {
     position: vi.fn(),
     destroy: vi.fn(),
@@ -68,7 +74,7 @@ describe('Stockfish integration', () => {
 
     // StockfishServiceのevaluatePositionが2回呼ばれることを確認
     await waitFor(() => {
-      const mockStockfish = StockfishService as unknown as { mock: { results: Array<{ value: { evaluatePosition: vi.Mock } }> } };
+      const mockStockfish = StockfishService as unknown as { mock: { results: Array<{ value: { evaluatePosition: Mock } }> } };
       const mockInstance = mockStockfish.mock.results[0].value;
       expect(mockInstance.evaluatePosition).toHaveBeenCalledTimes(2);
     });
