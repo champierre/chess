@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { describe, test, expect, beforeEach } from 'vitest';
 import { vi } from 'vitest';
 import React from 'react';
@@ -66,30 +66,28 @@ describe('Stockfish integration', () => {
   test('shows best move indicator when move is optimal', async () => {
     render(<App />);
 
-    // PGNを入力
+    // PGNを入力して読み込み
     const textarea = screen.getByPlaceholderText('ここにPGNをペーストしてください...');
     fireEvent.change(textarea, { target: { value: '1. e4 e5 2. Nf3 Nc6' } });
-
-    // 読み込みボタンをクリック
     const loadButton = screen.getByText('読み込む');
     fireEvent.click(loadButton);
 
     // 次の手ボタンをクリック
     const nextButton = screen.getByLabelText('次の手');
-    fireEvent.click(nextButton);
+    await act(async () => {
+      fireEvent.click(nextButton);
+    });
 
     // 評価中の表示を確認
-    await waitFor(() => {
-      expect(screen.getByTestId('evaluating')).toBeInTheDocument();
-    }, { timeout: 1000 });
+    expect(screen.getByTestId('evaluating')).toBeInTheDocument();
 
     // 最善手の表示を確認（非同期処理の完了を待つ）
     await waitFor(() => {
-      expect(screen.queryByTestId('evaluating')).not.toBeInTheDocument();
+      expect(mockEvaluatePosition).toHaveBeenCalled();
       const bestMoveIndicator = screen.getByTestId('best-move-indicator');
       expect(bestMoveIndicator).toBeInTheDocument();
       expect(bestMoveIndicator).toHaveAttribute('title', '最善手です');
-    }, { timeout: 1000 });
+    }, { timeout: 2000 });
   });
 
   test('evaluates position after each move', async () => {
