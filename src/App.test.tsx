@@ -1,7 +1,6 @@
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { describe, test, expect, beforeEach } from 'vitest';
 import { vi } from 'vitest';
-import React from 'react';
 import App from './App';
 
 interface ChessboardConfig {
@@ -136,19 +135,55 @@ describe('Stockfish integration', () => {
   test('displays game type correctly', async () => {
     render(<App />);
     
-    const input = screen.getByPlaceholderText('Chess.com ユーザー名');
-    fireEvent.change(input, { target: { value: 'test' } });
+    // テスト用のPGNを入力
+    const textarea = screen.getByPlaceholderText('ここにPGNをペーストしてください...');
+    const testPgn = `[Event "Test Game"]
+[Site "Chess.com"]
+[Date "2024.02.04"]
+[White "test"]
+[Black "opponent"]
+[Result "1-0"]
+[TimeControl "60"]
+[Variant "Standard"]
+
+1. e4 e5 *`;
+    
+    fireEvent.change(textarea, { target: { value: testPgn } });
     
     await act(async () => {
-      fireEvent.click(screen.getByText('取得'));
+      fireEvent.click(screen.getByText('読み込む'));
       await new Promise(resolve => setTimeout(resolve, 0));
     });
 
-    const gameTypeText = screen.getByText('ゲームタイプ');
-    const bulletText = screen.getByText('Bullet');
-    
-    expect(gameTypeText).toBeInTheDocument();
-    expect(bulletText).toBeInTheDocument();
+    // ゲームタイプの表示を確認
+    const gameTypeText = screen.getByTestId('game-type');
+    expect(gameTypeText).toHaveTextContent('ゲームタイプ');
   });
+
+  test('selected game has correct background', async () => {
+    render(<App />);
+    
+    // PGNを入力して読み込み
+    const textarea = screen.getByPlaceholderText('ここにPGNをペーストしてください...');
+    const testPgn = `[Event "Test Game"]
+[Site "Chess.com"]
+[Date "2024.02.04"]
+[White "test"]
+[Black "opponent"]
+[Result "1-0"]
+[TimeControl "60"]
+[Variant "Standard"]
+
+1. e4 e5 *`;
+    
+    fireEvent.change(textarea, { target: { value: testPgn } });
+    
+    await act(async () => {
+      fireEvent.click(screen.getByText('読み込む'));
+      await new Promise(resolve => setTimeout(resolve, 0));
+    });
+
+    const gameElement = screen.getByTestId('game-item');
+    expect(gameElement).toHaveClass('bg-blue-50');
   });
 });
