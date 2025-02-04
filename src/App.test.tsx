@@ -232,10 +232,10 @@ describe('Stockfish integration', () => {
 
     // ゲームタイプの表示を確認（Bulletゲーム）
     const gameTypeElement = screen.getByTestId('game-type');
-    expect(gameTypeElement).toHaveTextContent('Bullet');
+    expect(gameTypeElement).toHaveTextContent(/Bullet/i);
     
     // アイコンの表示を確認
-    const bulletIcon = screen.getByTestId('bullet-icon');
+    const bulletIcon = screen.getByTestId('filter-bullet-icon');
     expect(bulletIcon).toBeInTheDocument();
   });
 });
