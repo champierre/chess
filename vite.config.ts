@@ -19,12 +19,9 @@ export default defineConfig({
     },
   },
   build: {
-    commonjsOptions: {
-      include: [/stockfish/, /node_modules/],
+    rollupOptions: {
+      external: ['stockfish'],
     },
-  },
-  optimizeDeps: {
-    include: ['stockfish'],
   },
   test: {
     environment: 'jsdom',
