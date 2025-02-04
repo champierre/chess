@@ -39,7 +39,7 @@ export default defineConfig({
     deps: {
       optimizer: {
         web: {
-          include: ['^(?!.*\\b(lodash|@types\\/lodash)\\b).*$']
+          include: ['**/*']
         }
       }
     }

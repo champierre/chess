@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
-/** @jsxImportSource react */
+// @ts-ignore - React is used by JSX
+import React from 'react'
 import { render, screen } from '@testing-library/react'
 import { BestMoveIndicator } from '../components/BestMoveIndicator'
 import type { ChessMove } from '../App'
