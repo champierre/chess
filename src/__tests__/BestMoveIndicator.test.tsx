@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-// @ts-ignore - React is used by JSX
+// @ts-expect-error - React is used by JSX
 import React from 'react'
 import { render, screen } from '@testing-library/react'
 import { BestMoveIndicator } from '../components/BestMoveIndicator'

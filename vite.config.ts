@@ -1,13 +1,10 @@
-/// <reference types="vitest" />
 import { defineConfig } from "vite"
 import react from "@vitejs/plugin-react"
 import path from "path"
 import type { UserConfig } from 'vite'
 import type { InlineConfig } from 'vitest'
-
-interface VitestConfigExport extends UserConfig {
-  test: InlineConfig
-}
+import type { UserConfigExport } from 'vite'
+import type { VitestConfigExport } from 'vitest/config'
 
 export default defineConfig({
   base: '/chess/',
