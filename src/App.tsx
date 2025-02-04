@@ -587,6 +587,9 @@ function App() {
                   </div>
                 ) : null}
               </div>
+              <div className="flex items-center" data-testid="evaluation-status">
+                {isEvaluating && <span className="text-gray-500">評価中...</span>}
+              </div>
             </div>
           </div>
         </div>
