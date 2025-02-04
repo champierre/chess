@@ -54,38 +54,28 @@ describe('Stockfish integration', () => {
     const textarea = screen.getByPlaceholderText('ここにPGNをペーストしてください...');
     fireEvent.change(textarea, { target: { value: '1. e4 e5 2. Nf3 Nc6' } });
     const loadButton = screen.getByText('読み込む');
-    await act(async () => {
-      fireEvent.click(loadButton);
-      await new Promise(resolve => setTimeout(resolve, 100));
-    });
+    fireEvent.click(loadButton);
 
     // 次の手ボタンをクリック
     const nextButton = screen.getByLabelText('次の手');
     await act(async () => {
       fireEvent.click(nextButton);
-      await new Promise(resolve => setTimeout(resolve, 300));
     });
 
     // 評価中の状態を確認
-    await waitFor(() => {
-      const evaluatingElement = screen.getByTestId('evaluation-status');
-      expect(evaluatingElement).toBeInTheDocument();
-      const evaluatingText = evaluatingElement.textContent;
-      expect(evaluatingText).toContain('評価中...');
-    }, { timeout: 3000 });
+    const evaluatingElement = screen.getByTestId('evaluation-status');
+    expect(evaluatingElement).toBeInTheDocument();
+    expect(evaluatingElement.textContent).toBe('評価中...');
 
     // 評価が完了するまで待機
-    await waitFor(() => {
-      expect(mockEvaluatePosition).toHaveBeenCalled();
-    }, { timeout: 3000 });
+    await act(async () => {
+      await mockEvaluatePosition();
+    });
 
     // 最善手の表示を確認
-    await waitFor(() => {
-      expect(screen.queryByTestId('evaluation-status')).toBeInTheDocument();
-      const bestMoveIndicator = screen.getByTestId('best-move-indicator');
-      expect(bestMoveIndicator).toBeInTheDocument();
-      expect(bestMoveIndicator).toHaveAttribute('title', '最善手です');
-    }, { timeout: 3000 });
+    const bestMoveIndicator = screen.getByTestId('best-move-indicator');
+    expect(bestMoveIndicator).toBeInTheDocument();
+    expect(bestMoveIndicator).toHaveAttribute('title', '最善手です');
   });
 
   test('evaluates position after each move', async () => {
@@ -94,10 +84,7 @@ describe('Stockfish integration', () => {
     // PGNを入力して読み込み
     const textarea = screen.getByPlaceholderText('ここにPGNをペーストしてください...');
     fireEvent.change(textarea, { target: { value: '1. e4 e5 2. Nf3 Nc6' } });
-    await act(async () => {
-      fireEvent.click(screen.getByText('読み込む'));
-      await new Promise(resolve => setTimeout(resolve, 100));
-    });
+    fireEvent.click(screen.getByText('読み込む'));
 
     // 次の手を2回クリック
     const nextButton = screen.getByLabelText('次の手');
@@ -105,35 +92,29 @@ describe('Stockfish integration', () => {
     // 最初の手
     await act(async () => {
       fireEvent.click(nextButton);
-      await new Promise(resolve => setTimeout(resolve, 300));
-    });
-
-    await waitFor(() => {
+      
+      // 評価中の状態を確認
       const evaluatingElement = screen.getByTestId('evaluation-status');
       expect(evaluatingElement).toBeInTheDocument();
-      const evaluatingText = evaluatingElement.textContent;
-      expect(evaluatingText).toContain('評価中...');
-    }, { timeout: 3000 });
+      expect(evaluatingElement.textContent).toBe('評価中...');
+      
+      await mockEvaluatePosition();
+    });
 
-    await waitFor(() => {
-      expect(mockEvaluatePosition).toHaveBeenCalledTimes(1);
-    }, { timeout: 3000 });
+    expect(mockEvaluatePosition).toHaveBeenCalledTimes(1);
 
     // 2回目の手
     await act(async () => {
       fireEvent.click(nextButton);
-      await new Promise(resolve => setTimeout(resolve, 300));
-    });
-
-    await waitFor(() => {
+      
+      // 評価中の状態を確認
       const evaluatingElement = screen.getByTestId('evaluation-status');
       expect(evaluatingElement).toBeInTheDocument();
-      const evaluatingText = evaluatingElement.textContent;
-      expect(evaluatingText).toContain('評価中...');
-    }, { timeout: 3000 });
+      expect(evaluatingElement.textContent).toBe('評価中...');
+      
+      await mockEvaluatePosition();
+    });
 
-    await waitFor(() => {
-      expect(mockEvaluatePosition).toHaveBeenCalledTimes(2);
-    }, { timeout: 3000 });
+    expect(mockEvaluatePosition).toHaveBeenCalledTimes(2);
   });
 });

@@ -308,16 +308,13 @@ function App() {
       if (move) {
         const chessboard = (window as any).chessboard;
         if (chessboard && typeof chessboard.position === 'function') {
+          setIsEvaluating(true);
+          setCurrentMoveIsBest(false);
+          chessboard.position(move.after);
+          setCurrentMove(prev => prev + 1);
           try {
-            setIsEvaluating(true);
-            setCurrentMoveIsBest(false);
-            await new Promise(resolve => setTimeout(resolve, 100));
-            chessboard.position(move.after);
-            setCurrentMove(prev => prev + 1);
-            await new Promise(resolve => setTimeout(resolve, 100));
             await evaluateCurrentPosition();
           } finally {
-            await new Promise(resolve => setTimeout(resolve, 100));
             setIsEvaluating(false);
           }
         }
@@ -578,10 +575,8 @@ function App() {
               >
                 <FontAwesomeIcon icon={faArrowsUpDown} />
               </button>
-              <div className="flex items-center" data-testid="evaluation-status">
-                {isEvaluating && (
-                  <span className="text-gray-500">評価中...</span>
-                )}
+              <div data-testid="evaluation-status" className="flex items-center">
+                <span className="text-gray-500">{isEvaluating ? '評価中...' : ''}</span>
                 {!isEvaluating && currentMoveIsBest && currentMove > 0 && (
                   <div className="text-green-500" title="最善手です" data-testid="best-move-indicator">
                     <FontAwesomeIcon icon={faCheck} />
