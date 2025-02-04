@@ -49,6 +49,16 @@ describe('Stockfish integration', () => {
   test('shows best move indicator when move is optimal', async () => {
     render(<App />);
 
+    // ユーザー名を設定して対局データを取得
+    const usernameInput = screen.getByPlaceholderText('Chess.com ユーザー名');
+    fireEvent.change(usernameInput, { target: { value: 'test' } });
+    const fetchButton = screen.getByText('取得');
+    
+    await act(async () => {
+      fireEvent.click(fetchButton);
+      await new Promise(resolve => setTimeout(resolve, 100));
+    });
+
     // PGNを入力して読み込み
     const textarea = screen.getByPlaceholderText('ここにPGNをペーストしてください...');
     fireEvent.change(textarea, { target: { value: '1. e4 e5 2. Nf3 Nc6' } });
@@ -56,7 +66,7 @@ describe('Stockfish integration', () => {
     
     await act(async () => {
       fireEvent.click(loadButton);
-      await new Promise(resolve => setTimeout(resolve, 0));
+      await new Promise(resolve => setTimeout(resolve, 100));
     });
 
     // 次の手ボタンをクリック
@@ -64,7 +74,7 @@ describe('Stockfish integration', () => {
     
     await act(async () => {
       fireEvent.click(nextButton);
-      await new Promise(resolve => setTimeout(resolve, 0));
+      await new Promise(resolve => setTimeout(resolve, 100));
     });
 
     // 評価中の状態を確認
@@ -74,7 +84,7 @@ describe('Stockfish integration', () => {
     // 評価が完了するまで待機
     await act(async () => {
       await mockEvaluatePosition();
-      await new Promise(resolve => setTimeout(resolve, 0));
+      await new Promise(resolve => setTimeout(resolve, 100));
     });
 
     // 最善手の表示を確認
@@ -86,13 +96,23 @@ describe('Stockfish integration', () => {
   test('evaluates position after each move', async () => {
     render(<App />);
 
+    // ユーザー名を設定して対局データを取得
+    const usernameInput = screen.getByPlaceholderText('Chess.com ユーザー名');
+    fireEvent.change(usernameInput, { target: { value: 'test' } });
+    const fetchButton = screen.getByText('取得');
+    
+    await act(async () => {
+      fireEvent.click(fetchButton);
+      await new Promise(resolve => setTimeout(resolve, 100));
+    });
+
     // PGNを入力して読み込み
     const textarea = screen.getByPlaceholderText('ここにPGNをペーストしてください...');
     fireEvent.change(textarea, { target: { value: '1. e4 e5 2. Nf3 Nc6' } });
     
     await act(async () => {
       fireEvent.click(screen.getByText('読み込む'));
-      await new Promise(resolve => setTimeout(resolve, 0));
+      await new Promise(resolve => setTimeout(resolve, 100));
     });
 
     // 次の手を2回クリック
@@ -101,7 +121,7 @@ describe('Stockfish integration', () => {
     // 最初の手
     await act(async () => {
       fireEvent.click(nextButton);
-      await new Promise(resolve => setTimeout(resolve, 0));
+      await new Promise(resolve => setTimeout(resolve, 100));
     });
 
     // 評価中の状態を確認
@@ -110,7 +130,7 @@ describe('Stockfish integration', () => {
 
     await act(async () => {
       await mockEvaluatePosition();
-      await new Promise(resolve => setTimeout(resolve, 0));
+      await new Promise(resolve => setTimeout(resolve, 100));
     });
 
     expect(mockEvaluatePosition).toHaveBeenCalledTimes(1);
@@ -118,7 +138,7 @@ describe('Stockfish integration', () => {
     // 2回目の手
     await act(async () => {
       fireEvent.click(nextButton);
-      await new Promise(resolve => setTimeout(resolve, 0));
+      await new Promise(resolve => setTimeout(resolve, 100));
     });
 
     // 評価中の状態を確認
@@ -126,7 +146,7 @@ describe('Stockfish integration', () => {
 
     await act(async () => {
       await mockEvaluatePosition();
-      await new Promise(resolve => setTimeout(resolve, 0));
+      await new Promise(resolve => setTimeout(resolve, 100));
     });
 
     expect(mockEvaluatePosition).toHaveBeenCalledTimes(2);
@@ -184,7 +204,7 @@ describe('Stockfish integration', () => {
     });
 
     const gameElement = screen.getByTestId('game-item');
-    expect(gameElement).toHaveClass('bg-blue-50');
+    expect(gameElement).toHaveClass('bg-blue-50', 'border-l-4', 'border-blue-500');
   });
 
   test('displays game type correctly', async () => {
@@ -213,5 +233,9 @@ describe('Stockfish integration', () => {
     // ゲームタイプの表示を確認（Bulletゲーム）
     const gameTypeElement = screen.getByTestId('game-type');
     expect(gameTypeElement).toHaveTextContent('Bullet');
+    
+    // アイコンの表示を確認
+    const bulletIcon = screen.getByTestId('bullet-icon');
+    expect(bulletIcon).toBeInTheDocument();
   });
 });
