@@ -301,7 +301,7 @@ function App() {
     }
   };
 
-  const nextMove = async () => {
+  const nextMove = () => {
     if (mutableGameRef.current && currentMove < mutableGameRef.current.history().length) {
       const moves = mutableGameRef.current.history({ verbose: true }) as ChessMove[];
       const move = moves[currentMove];
@@ -310,13 +310,11 @@ function App() {
         if (chessboard && typeof chessboard.position === 'function') {
           setIsEvaluating(true);
           setCurrentMoveIsBest(false);
-          chessboard.position(move.after);
           setCurrentMove(prev => prev + 1);
-          try {
-            await evaluateCurrentPosition();
-          } finally {
+          chessboard.position(move.after);
+          evaluateCurrentPosition().finally(() => {
             setIsEvaluating(false);
-          }
+          });
         }
       }
     }
@@ -369,37 +367,53 @@ function App() {
                       data-testid="filter-bullet-icon"
                       data-devinid="filter-bullet"
                       onClick={() => setSelectedGameType((prev: 'Bullet' | 'Blitz' | 'Rapid' | 'Daily' | null) => prev === 'Bullet' ? null : 'Bullet')}
-                      className={`cursor-pointer text-2xl ${selectedGameType === 'Bullet' ? 'text-amber-800' : 'text-gray-300'}`}
-                      title="Bullet"
+                      className={`p-2 rounded-lg transition-all duration-200 ${
+                        selectedGameType === 'Bullet' 
+                          ? 'bg-amber-100 text-amber-800 shadow-sm' 
+                          : 'text-gray-400 hover:text-amber-800 hover:bg-amber-50'
+                      }`}
+                      title="Bullet対局を表示"
                     >
-                      <FontAwesomeIcon icon={faRocket} />
+                      <FontAwesomeIcon icon={faRocket} className="text-xl" />
                     </button>
                     <button
                       data-testid="filter-blitz-icon"
                       data-devinid="filter-blitz"
                       onClick={() => setSelectedGameType((prev: 'Bullet' | 'Blitz' | 'Rapid' | 'Daily' | null) => prev === 'Blitz' ? null : 'Blitz')}
-                      className={`cursor-pointer text-2xl ${selectedGameType === 'Blitz' ? 'text-yellow-500' : 'text-gray-300'}`}
-                      title="Blitz"
+                      className={`p-2 rounded-lg transition-all duration-200 ${
+                        selectedGameType === 'Blitz'
+                          ? 'bg-yellow-100 text-yellow-600 shadow-sm'
+                          : 'text-gray-400 hover:text-yellow-600 hover:bg-yellow-50'
+                      }`}
+                      title="Blitz対局を表示"
                     >
-                      <FontAwesomeIcon icon={faBolt} />
+                      <FontAwesomeIcon icon={faBolt} className="text-xl" />
                     </button>
                     <button
                       data-testid="filter-rapid-icon"
                       data-devinid="filter-rapid"
                       onClick={() => setSelectedGameType((prev: 'Bullet' | 'Blitz' | 'Rapid' | 'Daily' | null) => prev === 'Rapid' ? null : 'Rapid')}
-                      className={`cursor-pointer text-2xl ${selectedGameType === 'Rapid' ? 'text-green-500' : 'text-gray-300'}`}
-                      title="Rapid"
+                      className={`p-2 rounded-lg transition-all duration-200 ${
+                        selectedGameType === 'Rapid'
+                          ? 'bg-green-100 text-green-600 shadow-sm'
+                          : 'text-gray-400 hover:text-green-600 hover:bg-green-50'
+                      }`}
+                      title="Rapid対局を表示"
                     >
-                      <FontAwesomeIcon icon={faStopwatch} />
+                      <FontAwesomeIcon icon={faStopwatch} className="text-xl" />
                     </button>
                     <button
                       data-testid="filter-daily-icon"
                       data-devinid="filter-daily"
                       onClick={() => setSelectedGameType((prev: 'Bullet' | 'Blitz' | 'Rapid' | 'Daily' | null) => prev === 'Daily' ? null : 'Daily')}
-                      className={`cursor-pointer text-2xl ${selectedGameType === 'Daily' ? 'text-orange-500' : 'text-gray-300'}`}
-                      title="Daily"
+                      className={`p-2 rounded-lg transition-all duration-200 ${
+                        selectedGameType === 'Daily'
+                          ? 'bg-orange-100 text-orange-600 shadow-sm'
+                          : 'text-gray-400 hover:text-orange-600 hover:bg-orange-50'
+                      }`}
+                      title="Daily対局を表示"
                     >
-                      <FontAwesomeIcon icon={faSun} />
+                      <FontAwesomeIcon icon={faSun} className="text-xl" />
                     </button>
                   </div>
                 </h2>
@@ -411,18 +425,23 @@ function App() {
                         loadPGN(game.pgn);
                         setSelectedGame(game);
                       }}
-                      className={`w-full px-4 py-2 text-left flex flex-col ${
-                        selectedGame === game ? "bg-blue-100" : "hover:bg-gray-50"
+                      className={`w-full px-4 py-3 text-left flex flex-col gap-2 transition-colors duration-200 ${
+                        selectedGame === game ? "bg-blue-50 border-l-4 border-blue-500" : "hover:bg-gray-50 border-l-4 border-transparent"
                       }`}
                     >
-                      <span className="font-medium">
-                        {game.date} {getResultIcon(game, username)}
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium flex items-center gap-2">
+                          {game.date}
+                          {getResultIcon(game, username)}
+                        </span>
                         {game.gameType && (
-                          <span className="ml-2">{getGameTypeIcon(game.gameType)}</span>
+                          <span className="text-lg">{getGameTypeIcon(game.gameType)}</span>
                         )}
-                      </span>
-                      <span className="text-gray-600">
-                        {game.white} vs {game.black}
+                      </div>
+                      <span className="text-gray-600 flex items-center gap-1">
+                        <span className="font-medium">{game.white}</span>
+                        <span className="text-gray-400">vs</span>
+                        <span className="font-medium">{game.black}</span>
                       </span>
                     </button>
                   ))}
@@ -517,50 +536,90 @@ function App() {
                 )}
               </div>
             ) : (
-              <>
-                <textarea
-                  value={pgn}
-                  onChange={(e) => setPgn(e.target.value)}
-                  placeholder="ここにPGNをペーストしてください..."
-                  className="w-full h-64 mb-4 p-2 border rounded"
-                />
+              <div className="space-y-4">
+                <div className="relative">
+                  <textarea
+                    value={pgn}
+                    onChange={(e) => setPgn(e.target.value)}
+                    placeholder="ここにPGNをペーストしてください..."
+                    className="w-full h-64 p-4 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow duration-200 font-mono text-sm"
+                  />
+                  {pgn && (
+                    <button
+                      onClick={() => setPgn('')}
+                      className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100 transition-colors duration-200"
+                      aria-label="入力をクリア"
+                    >
+                      <FontAwesomeIcon icon={faTimes} />
+                    </button>
+                  )}
+                </div>
                 <button 
                   onClick={() => loadPGN()} 
-                  className="w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
+                  disabled={!pgn}
+                  className={`w-full py-3 px-4 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 ${
+                    pgn 
+                      ? 'bg-blue-500 text-white hover:bg-blue-600 shadow-sm' 
+                      : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  }`}
                 >
-                  読み込む
+                  <FontAwesomeIcon icon={faUpload} />
+                  <span>読み込む</span>
                 </button>
-              </>
+              </div>
             )}
           </div>
           
           <div>
             {selectedGame && (
-              <div className="mb-4 p-2 bg-gray-100 rounded">
-                <p className="font-bold mb-1">対局情報</p>
-                <p>日付: {selectedGame.date}</p>
-                <p>結果: {selectedGame.result}</p>
-                <p>白: {selectedGame.white}, 黒: {selectedGame.black}</p>
-                {selectedGame.gameType && (
-                  <p>ゲームタイプ: {selectedGame.gameType} <span className="ml-2">{getGameTypeIcon(selectedGame.gameType)}</span></p>
-                )}
+              <div className="mb-4 p-4 bg-gray-100 rounded-lg border border-gray-200 shadow-sm">
+                <h2 className="font-bold text-lg mb-3 text-gray-800">対局情報</h2>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <p className="text-gray-600">日付</p>
+                    <p className="font-medium">{selectedGame.date}</p>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <p className="text-gray-600">結果</p>
+                    <p className="font-medium">{selectedGame.result}</p>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <p className="text-gray-600">対局者</p>
+                    <p className="font-medium">
+                      <span className="text-gray-800">{selectedGame.white}</span>
+                      <span className="mx-2 text-gray-400">vs</span>
+                      <span className="text-gray-800">{selectedGame.black}</span>
+                    </p>
+                  </div>
+                  {selectedGame.gameType && (
+                    <div className="flex items-center justify-between">
+                      <p className="text-gray-600">ゲームタイプ</p>
+                      <p className="font-medium flex items-center gap-2">
+                        {selectedGame.gameType}
+                        <span className="text-lg">{getGameTypeIcon(selectedGame.gameType)}</span>
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
             <div ref={containerRef} className="mb-4" />
             <div className="flex justify-center gap-4">
               <button 
                 onClick={prevMove}
-                className="bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600"
+                className="bg-gray-100 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-200 transition-colors duration-200 flex items-center gap-1"
                 aria-label="前の手"
               >
-                <ArrowLeft size={24} />
+                <ArrowLeft size={20} />
+                <span>前の手</span>
               </button>
               <button 
                 onClick={nextMove}
-                className="bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600"
+                className="bg-gray-100 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-200 transition-colors duration-200 flex items-center gap-1"
                 aria-label="次の手"
               >
-                <ArrowRight size={24} />
+                <span>次の手</span>
+                <ArrowRight size={20} />
               </button>
               <button
                 onClick={() => {
@@ -569,17 +628,25 @@ function App() {
                     setIsFlipped(!isFlipped);
                   }
                 }}
-                className="bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600"
+                className="bg-gray-100 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-200 transition-colors duration-200"
                 title="盤の上下反転"
                 aria-label="盤の上下反転"
               >
                 <FontAwesomeIcon icon={faArrowsUpDown} />
               </button>
-              <div data-testid="evaluation-status" className="flex items-center">
-                <span className="text-gray-500">{isEvaluating ? '評価中...' : ''}</span>
+              <div data-testid="evaluation-status" className="flex items-center bg-gray-100 px-4 py-2 rounded-lg">
+                <span className="text-gray-700 font-medium" data-testid="evaluation-text">
+                  {isEvaluating && (
+                    <span className="flex items-center gap-2">
+                      <span className="inline-block w-4 h-4 border-2 border-gray-500 border-t-transparent rounded-full animate-spin"></span>
+                      評価中...
+                    </span>
+                  )}
+                </span>
                 {!isEvaluating && currentMoveIsBest && currentMove > 0 && (
-                  <div className="text-green-500" title="最善手です" data-testid="best-move-indicator">
+                  <div className="text-green-600 font-medium flex items-center gap-1" title="最善手です" data-testid="best-move-indicator">
                     <FontAwesomeIcon icon={faCheck} />
+                    <span>最善手</span>
                   </div>
                 )}
               </div>
