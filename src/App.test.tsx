@@ -50,75 +50,66 @@ describe('Stockfish integration', () => {
   test('ゲームを選択すると、ハイライトされ情報が表示されることを確認', async () => {
     render(<App />);
 
-    // ユーザー名を設定して対局データを取得
-    const usernameInput = screen.getByPlaceholderText('Chess.com ユーザー名');
-    fireEvent.change(usernameInput, { target: { value: 'test' } });
-    const fetchButton = screen.getByText('取得');
+    // PGNを入力して読み込み
+    const testPgn = `[Event "Test Game"]
+[Site "Chess.com"]
+[Date "2024.02.04"]
+[White "test"]
+[Black "opponent"]
+[Result "1-0"]
+[TimeControl "60"]
+[Variant "Standard"]
+
+1. e4 e5 *`;
+
+    const textarea = screen.getByPlaceholderText('ここにPGNをペーストしてください...');
+    fireEvent.change(textarea, { target: { value: testPgn } });
     
     await act(async () => {
-      fireEvent.click(fetchButton);
-      await new Promise(resolve => setTimeout(resolve, 500));
+      fireEvent.click(screen.getByText('読み込む'));
+      // UIの更新を待機
+      await new Promise(resolve => setTimeout(resolve, 0));
     });
 
     // 日付要素の存在を確認
-    const dateElement = await screen.findByTestId('game-date');
+    const dateElement = screen.getByTestId('game-date');
     expect(dateElement).toBeInTheDocument();
-    
-    // 日付のテキスト内容を確認（より柔軟な方法で）
-    const dateText = dateElement.textContent;
-    expect(dateText).toMatch(/\d{4}\.\d{2}\.\d{2}/);
+    expect(dateElement).toHaveTextContent('2024.02.04');
     
     // 日付ラベルの存在を確認
     const dateLabel = screen.getByText('日付');
     expect(dateLabel).toBeInTheDocument();
-    
-    // 日付の値を確認
-    const dateValue = dateLabel.nextElementSibling;
-    expect(dateValue).toHaveTextContent(/\d{4}\.\d{2}\.\d{2}/);
   });
 
   test('shows best move indicator when move is optimal', async () => {
     render(<App />);
 
-    // ユーザー名を設定して対局データを取得
-    const usernameInput = screen.getByPlaceholderText('Chess.com ユーザー名');
-    fireEvent.change(usernameInput, { target: { value: 'test' } });
-    const fetchButton = screen.getByText('取得');
-    
-    await act(async () => {
-      fireEvent.click(fetchButton);
-      await new Promise(resolve => setTimeout(resolve, 100));
-    });
-
     // PGNを入力して読み込み
     const textarea = screen.getByPlaceholderText('ここにPGNをペーストしてください...');
     fireEvent.change(textarea, { target: { value: '1. e4 e5 2. Nf3 Nc6' } });
-    const loadButton = screen.getByText('読み込む');
     
     await act(async () => {
-      fireEvent.click(loadButton);
-      await new Promise(resolve => setTimeout(resolve, 500));
+      fireEvent.click(screen.getByText('読み込む'));
+      await new Promise(resolve => setTimeout(resolve, 100));
     });
-
-    // ゲーム情報が表示されるまで待機
-    await screen.findByTestId('game-date');
 
     // 次の手ボタンをクリック
     const nextButton = screen.getByLabelText('次の手');
     
     await act(async () => {
       fireEvent.click(nextButton);
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // 評価状態の変更を待機
+      await new Promise(resolve => setTimeout(resolve, 0));
     });
 
-    // 評価中の状態を確認
-    const evaluatingElement = screen.getByTestId('evaluation-status');
-    expect(evaluatingElement).toHaveTextContent('評価中...');
+    // 評価中の状態を確認（下部の評価状態表示）
+    const evaluationStatus = screen.getAllByTestId('evaluation-status')[0];
+    expect(evaluationStatus).toHaveTextContent('評価中...');
 
     // 評価が完了するまで待機
     await act(async () => {
       await mockEvaluatePosition();
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 0));
     });
 
     // 最善手の表示を確認
@@ -130,23 +121,13 @@ describe('Stockfish integration', () => {
   test('evaluates position after each move', async () => {
     render(<App />);
 
-    // ユーザー名を設定して対局データを取得
-    const usernameInput = screen.getByPlaceholderText('Chess.com ユーザー名');
-    fireEvent.change(usernameInput, { target: { value: 'test' } });
-    const fetchButton = screen.getByText('取得');
-    
-    await act(async () => {
-      fireEvent.click(fetchButton);
-      await new Promise(resolve => setTimeout(resolve, 100));
-    });
-
     // PGNを入力して読み込み
     const textarea = screen.getByPlaceholderText('ここにPGNをペーストしてください...');
     fireEvent.change(textarea, { target: { value: '1. e4 e5 2. Nf3 Nc6' } });
     
     await act(async () => {
       fireEvent.click(screen.getByText('読み込む'));
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 0));
     });
 
     // 次の手を2回クリック
@@ -155,16 +136,17 @@ describe('Stockfish integration', () => {
     // 最初の手
     await act(async () => {
       fireEvent.click(nextButton);
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // 評価状態の変更を待機
+      await new Promise(resolve => setTimeout(resolve, 0));
     });
 
-    // 評価中の状態を確認
-    const evaluatingElement = screen.getByTestId('evaluation-status');
-    expect(evaluatingElement).toHaveTextContent('評価中...');
+    // 評価中の状態を確認（下部の評価状態表示）
+    const evaluationStatus = screen.getAllByTestId('evaluation-status')[0];
+    expect(evaluationStatus).toHaveTextContent('評価中...');
 
     await act(async () => {
       await mockEvaluatePosition();
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 0));
     });
 
     expect(mockEvaluatePosition).toHaveBeenCalledTimes(1);
@@ -172,15 +154,16 @@ describe('Stockfish integration', () => {
     // 2回目の手
     await act(async () => {
       fireEvent.click(nextButton);
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 0));
     });
 
     // 評価中の状態を確認
-    expect(screen.getByTestId('evaluation-status')).toHaveTextContent('評価中...');
+    const secondEvaluationStatus = screen.getAllByTestId('evaluation-status')[0];
+    expect(secondEvaluationStatus).toHaveTextContent('評価中...');
 
     await act(async () => {
       await mockEvaluatePosition();
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 0));
     });
 
     expect(mockEvaluatePosition).toHaveBeenCalledTimes(2);
