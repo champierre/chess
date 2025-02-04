@@ -312,7 +312,7 @@ function App() {
     }
   }, [currentMove, mutableGameRef, stockfishRef, setCurrentMoveIsBest, setFeedback]);
 
-  const nextMove = React.useCallback(async () => {
+  const nextMove = React.useCallback(() => {
     if (mutableGameRef.current && currentMove < mutableGameRef.current.history().length) {
       const moves = mutableGameRef.current.history({ verbose: true }) as ChessMove[];
       const move = moves[currentMove];
@@ -323,18 +323,17 @@ function App() {
           setCurrentMoveIsBest(false);
           setCurrentMove(prev => prev + 1);
           chessboard.position(move.after);
-          try {
-            await new Promise(resolve => setTimeout(resolve, 0));
-            await evaluateCurrentPosition();
-          } finally {
-            setIsEvaluating(false);
-          }
+          Promise.resolve()
+            .then(() => evaluateCurrentPosition())
+            .finally(() => {
+              setIsEvaluating(false);
+            });
         }
       }
     }
   }, [currentMove, mutableGameRef, evaluateCurrentPosition, setIsEvaluating, setCurrentMoveIsBest]);
 
-  const prevMove = React.useCallback(async () => {
+  const prevMove = React.useCallback(() => {
     if (mutableGameRef.current && currentMove > 0) {
       const moves = mutableGameRef.current.history({ verbose: true }) as ChessMove[];
       const move = moves[currentMove - 2];
@@ -344,12 +343,11 @@ function App() {
         setCurrentMoveIsBest(false);
         setCurrentMove(prev => prev - 1);
         chessboard.position(move ? move.after : 'start');
-        try {
-          await new Promise(resolve => setTimeout(resolve, 0));
-          await evaluateCurrentPosition();
-        } finally {
-          setIsEvaluating(false);
-        }
+        Promise.resolve()
+          .then(() => evaluateCurrentPosition())
+          .finally(() => {
+            setIsEvaluating(false);
+          });
       }
     }
   }, [currentMove, mutableGameRef, evaluateCurrentPosition, setIsEvaluating, setCurrentMoveIsBest]);
