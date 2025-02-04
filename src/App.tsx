@@ -6,6 +6,7 @@ import { ArrowLeft, ArrowRight } from 'lucide-react';
 import * as Toast from '@radix-ui/react-toast';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowsUpDown, faCheck, faXmark, faEquals, faBolt, faRocket, faStopwatch, faSun } from '@fortawesome/free-solid-svg-icons';
+import { StockfishService } from './services/stockfish';
 
 type ChessBoard = {
   position: (fen: string) => void;
@@ -112,9 +113,12 @@ function App() {
   const [games, setGames] = useState<Game[]>([]);
   const [selectedGame, setSelectedGame] = useState<Game | null>(null);
   const [selectedGameType, setSelectedGameType] = useState<'Bullet' | 'Blitz' | 'Rapid' | 'Daily' | null>(null);
+  const [isEvaluating, setIsEvaluating] = useState(false);
+  const [currentMoveIsBest, setCurrentMoveIsBest] = useState(false);
   const boardRef = useRef<ChessBoard | null>(null);
   const gameRef = useRef<Chess | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const stockfishRef = useRef<StockfishService | null>(null);
 
   // Ensure refs are mutable
   const mutableBoardRef = boardRef as React.MutableRefObject<ChessBoard | null>;
@@ -140,6 +144,13 @@ function App() {
     } catch (error) {
       console.error('Failed to load username from localStorage:', error);
     }
+  }, []);
+
+  useEffect(() => {
+    stockfishRef.current = new StockfishService();
+    return () => {
+      stockfishRef.current?.destroy();
+    };
   }, []);
 
   useEffect(() => {
@@ -271,23 +282,44 @@ function App() {
     }
   };
 
-  const nextMove = () => {
+  const evaluateCurrentPosition = async () => {
+    if (!mutableGameRef.current || !stockfishRef.current) return;
+    
+    setIsEvaluating(true);
+    try {
+      const fen = mutableGameRef.current.fen();
+      const evaluation = await stockfishRef.current.evaluatePosition(fen);
+      if (currentMove > 0 && mutableGameRef.current) {
+        const moves = mutableGameRef.current.history({ verbose: true }) as ChessMove[];
+        const lastMove = moves[currentMove - 1];
+        setCurrentMoveIsBest(lastMove && `${lastMove.from}${lastMove.to}` === evaluation.bestMove);
+      }
+    } catch (error) {
+      setFeedback({ type: 'error', message: '評価中にエラーが発生しました' });
+    } finally {
+      setIsEvaluating(false);
+    }
+  };
+
+  const nextMove = async () => {
     if (mutableGameRef.current && currentMove < mutableGameRef.current.history().length && mutableBoardRef.current) {
       const moves = mutableGameRef.current.history({ verbose: true }) as ChessMove[];
       const move = moves[currentMove];
       if (move) {
         mutableBoardRef.current.position(move.after);
         setCurrentMove(prev => prev + 1);
+        await evaluateCurrentPosition();
       }
     }
   };
 
-  const prevMove = () => {
+  const prevMove = async () => {
     if (mutableGameRef.current && currentMove > 0 && mutableBoardRef.current) {
       const moves = mutableGameRef.current.history({ verbose: true }) as ChessMove[];
       const move = moves[currentMove - 2];
       mutableBoardRef.current.position(move ? move.after : 'start');
       setCurrentMove(prev => prev - 1);
+      await evaluateCurrentPosition();
     }
   };
 
@@ -531,6 +563,13 @@ function App() {
               >
                 <FontAwesomeIcon icon={faArrowsUpDown} />
               </button>
+              {isEvaluating ? (
+                <span className="text-gray-500 flex items-center">評価中...</span>
+              ) : currentMoveIsBest && currentMove > 0 ? (
+                <div className="flex items-center text-green-500" title="最善手です">
+                  <FontAwesomeIcon icon={faCheck} />
+                </div>
+              ) : null}
             </div>
           </div>
         </div>
