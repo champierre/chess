@@ -23,7 +23,8 @@ export default defineConfig({
     }), 
     commonjs({
       transformMixedEsModules: true,
-      requireReturnsDefault: 'auto'
+      requireReturnsDefault: 'auto',
+      esmExternals: true
     })
   ],
   resolve: {
