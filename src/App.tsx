@@ -310,9 +310,11 @@ function App() {
         const chessboard = (window as any).chessboard;
         if (chessboard && typeof chessboard.position === 'function') {
           setIsEvaluating(true);
+          setCurrentMoveIsBest(false);
           try {
             chessboard.position(move.after);
             setCurrentMove(prev => prev + 1);
+            await new Promise(resolve => setTimeout(resolve, 50)); // 状態更新を待機
             await evaluateCurrentPosition();
           } finally {
             setIsEvaluating(false);
