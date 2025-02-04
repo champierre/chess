@@ -47,7 +47,11 @@ export default defineConfig({
     setupFiles: ['./src/setupTests.ts'],
     include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     deps: {
-      inline: [/^(?!.*\b(lodash|@types\/lodash)\b).*$/]
+      optimizer: {
+        web: {
+          include: [/^(?!.*\b(lodash|@types\/lodash)\b).*$/]
+        }
+      }
     }
   }
 } as VitestConfigExport)
