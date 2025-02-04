@@ -24,13 +24,20 @@ export default defineConfig({
   server: {
     headers: {
       'Cross-Origin-Opener-Policy': 'same-origin',
-      'Cross-Origin-Embedder-Policy': 'require-corp'
+      'Cross-Origin-Embedder-Policy': 'require-corp',
+      'Cross-Origin-Resource-Policy': 'cross-origin'
     },
     host: true,
     strictPort: true,
     fs: {
       strict: false,
       allow: ['..']
+    },
+    proxy: {
+      '/chess/stockfish.js': {
+        target: 'http://localhost:5173',
+        rewrite: (path) => path.replace(/^\/chess/, '')
+      }
     }
   },
   publicDir: 'public',
