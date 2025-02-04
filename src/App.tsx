@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import './App.css';
 import type { JSX } from 'react';
 import { Chess } from 'chess.js';
-import { ArrowRight } from 'lucide-react';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 import * as Toast from '@radix-ui/react-toast';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowsUpDown, faCheck, faXmark, faEquals, faBolt, faRocket, faStopwatch, faSun } from '@fortawesome/free-solid-svg-icons';
@@ -507,8 +507,9 @@ function App() {
               <button 
                 onClick={prevMove}
                 className="bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600"
+                aria-label="前の手"
               >
-                前の手
+                <ArrowLeft size={24} />
               </button>
               <button 
                 onClick={nextMove}
