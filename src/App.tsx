@@ -324,7 +324,7 @@ function App() {
           setCurrentMove(prev => prev + 1);
           chessboard.position(move.after);
           try {
-            await Promise.resolve(); // UIの更新を確実に反映
+            await new Promise(resolve => setTimeout(resolve, 0));
             await evaluateCurrentPosition();
           } finally {
             setIsEvaluating(false);
@@ -345,7 +345,7 @@ function App() {
         setCurrentMove(prev => prev - 1);
         chessboard.position(move ? move.after : 'start');
         try {
-          await Promise.resolve(); // UIの更新を確実に反映
+          await new Promise(resolve => setTimeout(resolve, 0));
           await evaluateCurrentPosition();
         } finally {
           setIsEvaluating(false);
