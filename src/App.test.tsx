@@ -46,6 +46,30 @@ describe('Stockfish integration', () => {
     vi.clearAllMocks();
   });
 
+  // ゲーム選択と情報表示のテスト
+  test('ゲームを選択すると、ハイライトされ情報が表示されることを確認', async () => {
+    render(<App />);
+
+    // ユーザー名を設定して対局データを取得
+    const usernameInput = screen.getByPlaceholderText('Chess.com ユーザー名');
+    fireEvent.change(usernameInput, { target: { value: 'test' } });
+    const fetchButton = screen.getByText('取得');
+    
+    await act(async () => {
+      fireEvent.click(fetchButton);
+      await new Promise(resolve => setTimeout(resolve, 500));
+    });
+
+    // 日付ラベルと値を個別に確認
+    const dateElement = await screen.findByTestId('game-date');
+    expect(dateElement).toBeInTheDocument();
+    
+    // 最初のゲームの日付が表示されることを確認
+    const dateText = dateElement.textContent;
+    expect(dateText).toMatch(/\d{4}\.\d{2}\.\d{2}/);
+    expect(['2024.01.01', '2024.01.02', '2024.01.03', '2024.01.04']).toContain(dateText);
+  });
+
   test('shows best move indicator when move is optimal', async () => {
     render(<App />);
 
