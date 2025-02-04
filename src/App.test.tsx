@@ -60,22 +60,17 @@ describe('Stockfish integration', () => {
     const nextButton = screen.getByLabelText('次の手');
     await act(async () => {
       fireEvent.click(nextButton);
+      await new Promise(resolve => setTimeout(resolve, 100)); // 状態更新を待機
     });
 
     // 評価中の状態を確認
-    await waitFor(() => {
-      expect(screen.getByTestId('evaluating')).toBeInTheDocument();
-    }, { timeout: 1000 });
+    expect(screen.getByTestId('evaluating')).toBeInTheDocument();
 
     // 評価が完了するまで待機
     await waitFor(() => {
       expect(mockEvaluatePosition).toHaveBeenCalled();
-    }, { timeout: 2000 });
-
-    // 評価中の表示が消えることを確認
-    await waitFor(() => {
       expect(screen.queryByTestId('evaluating')).not.toBeInTheDocument();
-    }, { timeout: 1000 });
+    }, { timeout: 3000 });
 
     // 最善手の表示を確認
     await waitFor(() => {
