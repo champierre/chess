@@ -175,6 +175,11 @@ describe('Stockfish integration', () => {
       await new Promise(resolve => setTimeout(resolve, 100));
     });
 
+    // ゲーム情報の表示を確認
+    const dateElement = screen.getByText('日付');
+    expect(dateElement).toBeInTheDocument();
+    expect(dateElement.nextElementSibling).toHaveTextContent('2024.02.04');
+
     // ゲームタイプの表示を確認（Bulletゲーム）
     const gameTypeElement = screen.getByTestId('game-type');
     expect(gameTypeElement).toHaveTextContent('ゲームタイプ: Bullet');
