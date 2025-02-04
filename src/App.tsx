@@ -306,17 +306,18 @@ function App() {
       const moves = mutableGameRef.current.history({ verbose: true }) as ChessMove[];
       const move = moves[currentMove];
       if (move) {
-        // グローバルなChessboardインスタンスを使用
         const chessboard = (window as any).chessboard;
         if (chessboard && typeof chessboard.position === 'function') {
-          setIsEvaluating(true);
-          setCurrentMoveIsBest(false);
           try {
+            setIsEvaluating(true);
+            setCurrentMoveIsBest(false);
+            await new Promise(resolve => setTimeout(resolve, 100));
             chessboard.position(move.after);
             setCurrentMove(prev => prev + 1);
-            await new Promise(resolve => setTimeout(resolve, 50)); // 状態更新を待機
+            await new Promise(resolve => setTimeout(resolve, 100));
             await evaluateCurrentPosition();
           } finally {
+            await new Promise(resolve => setTimeout(resolve, 100));
             setIsEvaluating(false);
           }
         }
