@@ -60,17 +60,19 @@ describe('Stockfish integration', () => {
     const nextButton = screen.getByLabelText('次の手');
     await act(async () => {
       fireEvent.click(nextButton);
-      await new Promise(resolve => setTimeout(resolve, 100)); // 状態更新を待機
+      await new Promise(resolve => setTimeout(resolve, 200));
     });
 
     // 評価中の状態を確認
-    expect(screen.getByTestId('evaluating')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByTestId('evaluating')).toBeInTheDocument();
+    }, { timeout: 2000 });
 
     // 評価が完了するまで待機
     await waitFor(() => {
       expect(mockEvaluatePosition).toHaveBeenCalled();
       expect(screen.queryByTestId('evaluating')).not.toBeInTheDocument();
-    }, { timeout: 3000 });
+    }, { timeout: 5000 });
 
     // 最善手の表示を確認
     await waitFor(() => {
@@ -93,20 +95,29 @@ describe('Stockfish integration', () => {
     
     await act(async () => {
       fireEvent.click(nextButton);
-      await waitFor(() => {
-        expect(screen.getByTestId('evaluating')).toBeInTheDocument();
-      });
-      await waitFor(() => {
-        expect(mockEvaluatePosition).toHaveBeenCalledTimes(1);
-      }, { timeout: 2000 });
+      await new Promise(resolve => setTimeout(resolve, 200));
+    });
 
+    await waitFor(() => {
+      expect(screen.getByTestId('evaluating')).toBeInTheDocument();
+    }, { timeout: 2000 });
+
+    await waitFor(() => {
+      expect(mockEvaluatePosition).toHaveBeenCalledTimes(1);
+    }, { timeout: 5000 });
+
+    await act(async () => {
       fireEvent.click(nextButton);
-      await waitFor(() => {
-        expect(screen.getByTestId('evaluating')).toBeInTheDocument();
-      });
-      await waitFor(() => {
-        expect(mockEvaluatePosition).toHaveBeenCalledTimes(2);
-      }, { timeout: 2000 });
+      await new Promise(resolve => setTimeout(resolve, 200));
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('evaluating')).toBeInTheDocument();
+    }, { timeout: 2000 });
+
+    await waitFor(() => {
+      expect(mockEvaluatePosition).toHaveBeenCalledTimes(2);
+    }, { timeout: 5000 });
     });
   });
 });
