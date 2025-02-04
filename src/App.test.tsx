@@ -2,6 +2,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, test, expect, beforeEach } from 'vitest';
 import { vi, Mock } from 'vitest';
 import App from './App';
+import { mutableBoardRef } from './App';
 import { StockfishService } from './services/stockfish';
 
 interface ChessboardConfig {
@@ -11,18 +12,32 @@ interface ChessboardConfig {
 }
 
 // Chessboardのモック
+const mockPosition = vi.fn();
+const mockDestroy = vi.fn();
+
 vi.stubGlobal('Chessboard', (_container: HTMLElement, config: ChessboardConfig) => {
-  return {
-    position: vi.fn(),
-    destroy: vi.fn(),
+  const instance = {
+    position: mockPosition,
+    destroy: mockDestroy,
     ...config
   };
+  return instance;
 });
+
+beforeEach(() => {
+  vi.clearAllMocks();
+  mockPosition.mockClear();
+  mockDestroy.mockClear();
+  mockEvaluatePosition.mockClear();
+});
+
+const mockEvaluatePosition = vi.fn().mockResolvedValue({ bestMove: 'e2e4', score: 0.5 });
+const mockDestroy = vi.fn();
 
 vi.mock('./services/stockfish', () => ({
   StockfishService: vi.fn().mockImplementation(() => ({
-    evaluatePosition: vi.fn().mockResolvedValue({ bestMove: 'e2e4', score: 0.5 }),
-    destroy: vi.fn()
+    evaluatePosition: mockEvaluatePosition,
+    destroy: mockDestroy
   }))
 }));
 
@@ -49,7 +64,7 @@ describe('Stockfish integration', () => {
     // 評価中の表示を確認
     await waitFor(() => {
       expect(screen.getByText('評価中...')).toBeInTheDocument();
-    });
+    }, { timeout: 1000 });
 
     // 最善手の表示を確認（非同期処理の完了を待つ）
     await waitFor(() => {
@@ -74,9 +89,7 @@ describe('Stockfish integration', () => {
 
     // StockfishServiceのevaluatePositionが2回呼ばれることを確認
     await waitFor(() => {
-      const mockStockfish = StockfishService as unknown as { mock: { results: Array<{ value: { evaluatePosition: Mock } }> } };
-      const mockInstance = mockStockfish.mock.results[0].value;
-      expect(mockInstance.evaluatePosition).toHaveBeenCalledTimes(2);
-    });
+      expect(mockEvaluatePosition).toHaveBeenCalledTimes(2);
+    }, { timeout: 1000 });
   });
 });

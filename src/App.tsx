@@ -120,8 +120,8 @@ function App() {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const stockfishRef = useRef<StockfishService | null>(null);
 
-  // Ensure refs are mutable
-  const mutableBoardRef = boardRef as React.MutableRefObject<ChessBoard | null>;
+  // Ensure refs are mutable and export for testing
+  export const mutableBoardRef = boardRef as React.MutableRefObject<ChessBoard | null>;
   const mutableGameRef = gameRef as React.MutableRefObject<Chess | null>;
   
   const itemsPerPage = 10;
@@ -564,7 +564,7 @@ function App() {
                 <FontAwesomeIcon icon={faArrowsUpDown} />
               </button>
               {isEvaluating ? (
-                <span className="text-gray-500 flex items-center">評価中...</span>
+                <span className="text-gray-500 flex items-center" data-testid="evaluating">評価中...</span>
               ) : currentMoveIsBest && currentMove > 0 ? (
                 <div className="flex items-center text-green-500" title="最善手です" data-testid="best-move-indicator">
                   <FontAwesomeIcon icon={faCheck} />
