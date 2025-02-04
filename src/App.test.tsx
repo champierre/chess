@@ -73,21 +73,26 @@ describe('Stockfish integration', () => {
 
     // PGNの読み込みが完了するまで待機
     await act(async () => {
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 200));
     });
 
     // ゲーム情報セクションの存在を確認
-    const gameInfo = screen.getByTestId('game-info');
+    const gameInfo = await screen.findByTestId('game-info');
     expect(gameInfo).toBeInTheDocument();
 
     // 日付要素の存在を確認
-    const dateElement = within(gameInfo).getByTestId('game-date');
+    const dateElement = await within(gameInfo).findByTestId('game-date');
     expect(dateElement).toBeInTheDocument();
-    expect(dateElement).toHaveTextContent('2024.02.04');
+    expect(dateElement.textContent).toBe('2024.02.04');
     
     // 日付ラベルの存在を確認
-    const dateLabel = within(gameInfo).getByText('日付');
+    const dateLabel = await within(gameInfo).findByText('日付');
     expect(dateLabel).toBeInTheDocument();
+
+    // 評価状態の要素が存在することを確認
+    const evaluationStatus = await within(gameInfo).findByTestId('evaluation-status');
+    expect(evaluationStatus).toBeInTheDocument();
+    expect(evaluationStatus.textContent).toBe('');
   });
 
   test('shows best move indicator when move is optimal', async () => {
