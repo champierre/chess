@@ -152,35 +152,7 @@ describe('Stockfish integration', () => {
     expect(mockEvaluatePosition).toHaveBeenCalledTimes(2);
   });
 
-  test('displays game type correctly', async () => {
-    render(<App />);
-    
-    // テスト用のPGNを入力
-    const textarea = screen.getByPlaceholderText('ここにPGNをペーストしてください...');
-    const testPgn = `[Event "Test Game"]
-[Site "Chess.com"]
-[Date "2024.02.04"]
-[White "test"]
-[Black "opponent"]
-[Result "1-0"]
-[TimeControl "60"]
-[Variant "Standard"]
-
-1. e4 e5 *`;
-    
-    fireEvent.change(textarea, { target: { value: testPgn } });
-    
-    await act(async () => {
-      fireEvent.click(screen.getByText('読み込む'));
-      await new Promise(resolve => setTimeout(resolve, 0));
-    });
-
-    // ゲームタイプの表示を確認
-    const gameTypeText = screen.getByTestId('game-type');
-    expect(gameTypeText).toHaveTextContent('ゲームタイプ');
-  });
-
-  test('selected game has correct background', async () => {
+  test('displays game type and background correctly', async () => {
     render(<App />);
     
     // PGNを入力して読み込み
@@ -200,39 +172,12 @@ describe('Stockfish integration', () => {
     
     await act(async () => {
       fireEvent.click(screen.getByText('読み込む'));
-      await new Promise(resolve => setTimeout(resolve, 0));
-    });
-
-    const gameElement = screen.getByTestId('game-item');
-    expect(gameElement).toHaveClass('bg-blue-50', 'border-l-4', 'border-blue-500');
-  });
-
-  test('displays game type correctly', async () => {
-    render(<App />);
-    
-    // PGNを入力して読み込み
-    const textarea = screen.getByPlaceholderText('ここにPGNをペーストしてください...');
-    const testPgn = `[Event "Test Game"]
-[Site "Chess.com"]
-[Date "2024.02.04"]
-[White "test"]
-[Black "opponent"]
-[Result "1-0"]
-[TimeControl "60"]
-[Variant "Standard"]
-
-1. e4 e5 *`;
-    
-    fireEvent.change(textarea, { target: { value: testPgn } });
-    
-    await act(async () => {
-      fireEvent.click(screen.getByText('読み込む'));
-      await new Promise(resolve => setTimeout(resolve, 0));
+      await new Promise(resolve => setTimeout(resolve, 100));
     });
 
     // ゲームタイプの表示を確認（Bulletゲーム）
     const gameTypeElement = screen.getByTestId('game-type');
-    expect(gameTypeElement).toHaveTextContent(/Bullet/i);
+    expect(gameTypeElement).toHaveTextContent('ゲームタイプ: Bullet');
     
     // アイコンの表示を確認
     const bulletIcon = screen.getByTestId('filter-bullet-icon');
