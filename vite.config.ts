@@ -22,6 +22,10 @@ export default defineConfig({
     rollupOptions: {
       external: [],
     },
+    commonjsOptions: {
+      include: [/node_modules/],
+      transformMixedEsModules: true
+    }
   },
   test: {
     environment: 'jsdom',
