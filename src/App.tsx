@@ -447,7 +447,6 @@ function App() {
                         loadPGN(game.pgn);
                         setSelectedGame(game);
                       }}
-                      data-testid="game-item"
                       className={`w-full px-4 py-3 text-left flex flex-col gap-2 transition-colors duration-200 ${
                         selectedGame === game ? "bg-blue-100" : "hover:bg-gray-50 border-l-4 border-transparent"
                       }`}
@@ -660,13 +659,13 @@ function App() {
               >
                 <FontAwesomeIcon icon={faArrowsUpDown} />
               </button>
-              {selectedGame && (
+              {selectedGame && selectedGame.gameType && (
                 <div className="flex items-center gap-2">
                   <span data-testid="game-type" className="text-sm text-gray-600">
-                    ゲームタイプ: Bullet
+                    ゲームタイプ: {selectedGame.gameType}
                   </span>
-                  <span className="text-lg" data-testid="filter-bullet-icon">
-                    {getGameTypeIcon('Bullet')}
+                  <span className="text-lg">
+                    {getGameTypeIcon(selectedGame.gameType)}
                   </span>
                 </div>
               )}
