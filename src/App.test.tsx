@@ -66,8 +66,11 @@ describe('Stockfish integration', () => {
     
     await act(async () => {
       fireEvent.click(loadButton);
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 500));
     });
+
+    // ゲーム情報が表示されるまで待機
+    await screen.findByTestId('game-date');
 
     // 次の手ボタンをクリック
     const nextButton = screen.getByLabelText('次の手');
@@ -178,6 +181,10 @@ describe('Stockfish integration', () => {
     // ゲーム情報の表示を確認
     const dateElement = screen.getByTestId('game-date');
     expect(dateElement).toHaveTextContent('2024.02.04');
+
+    // 評価状態の表示を確認
+    const evaluationStatus = screen.getByTestId('evaluation-status');
+    expect(evaluationStatus).toBeInTheDocument();
 
     // ゲームタイプの表示を確認（Bulletゲーム）
     const gameTypeElement = screen.getByTestId('game-type');

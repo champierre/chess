@@ -593,13 +593,18 @@ function App() {
               <div className="mb-4 p-4 bg-gray-100 rounded-lg border border-gray-200 shadow-sm">
                 <h2 className="font-bold text-lg mb-3 text-gray-800">対局情報</h2>
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <p className="text-gray-600">日付</p>
-                    <p data-testid="game-date" className="font-medium">{selectedGame?.date || ''}</p>
-                  </div>
-                  <div className="flex items-center justify-end">
-                    <p data-testid="evaluation-status" className="text-gray-500">{isEvaluating ? '評価中...' : ''}</p>
-                  </div>
+                  {selectedGame && (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <p className="text-gray-600">日付</p>
+                        <p data-testid="game-date" className="font-medium">{selectedGame.date}</p>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <p className="text-gray-600">評価状態</p>
+                        <p data-testid="evaluation-status" className="text-gray-500">{isEvaluating ? '評価中...' : ''}</p>
+                      </div>
+                    </div>
+                  )}
                   <div className="flex items-center justify-between">
                     <p className="text-gray-600">結果</p>
                     <p className="font-medium">{selectedGame.result}</p>
