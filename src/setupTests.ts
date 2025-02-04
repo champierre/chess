@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom'
 import './index.css'
-import { vi } from 'vitest'
+import * as React from 'react'
 
-// React設定
-global.React = require('react')
+// テスト環境のグローバル設定
+global.React = React
