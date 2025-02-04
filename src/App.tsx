@@ -312,8 +312,9 @@ function App() {
         // グローバルなChessboardインスタンスを使用
         const chessboard = (window as any).chessboard;
         if (chessboard && typeof chessboard.position === 'function') {
-          chessboard.position(move.after);
           setCurrentMove(prev => prev + 1);
+          chessboard.position(move.after);
+          setIsEvaluating(true);
           await evaluateCurrentPosition();
         }
       }

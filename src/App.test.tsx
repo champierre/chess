@@ -47,12 +47,14 @@ beforeEach(() => {
   });
 });
 
+const mockEvaluatePosition = vi.fn().mockImplementation(() => {
+  return Promise.resolve({ bestMove: 'e2e4', score: 0.5 });
+});
+
 vi.mock('./services/stockfish', () => ({
   StockfishService: vi.fn().mockImplementation(() => {
     return {
-      evaluatePosition: vi.fn().mockImplementation(() => {
-        return Promise.resolve({ bestMove: 'e2e4', score: 0.5 });
-      }),
+      evaluatePosition: mockEvaluatePosition,
       destroy: vi.fn()
     };
   })
