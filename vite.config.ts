@@ -1,7 +1,13 @@
 import { defineConfig } from "vite"
 import react from "@vitejs/plugin-react"
 import path from "path"
-import type { VitestConfigExport } from 'vitest/config'
+/// <reference types="vitest" />
+import type { UserConfig } from 'vite'
+import type { InlineConfig } from 'vitest'
+
+interface VitestConfigExport extends UserConfig {
+  test: InlineConfig
+}
 
 export default defineConfig({
   base: '/chess/',
@@ -36,9 +42,13 @@ export default defineConfig({
   },
   build: {
     rollupOptions: {
-      external: []
+      external: [],
+      output: {
+        assetFileNames: 'assets/[name][extname]'
+      }
     },
-    assetsInlineLimit: 0
+    assetsInlineLimit: 0,
+    target: 'esnext'
   },
   test: {
     environment: 'jsdom',

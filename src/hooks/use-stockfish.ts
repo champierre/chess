@@ -14,7 +14,7 @@ export function useStockfish() {
   useEffect(() => {
     const initWorker = async () => {
       try {
-        const worker = new Worker(new URL('/stockfish.js', import.meta.url));
+        const worker = new Worker('/chess/stockfish.js');
         workerRef.current = worker;
         setStockfish(worker);
         

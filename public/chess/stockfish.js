@@ -1,1 +1,1 @@
-Not Found
+Cannot find "/stockfish.js" in stockfish@15.0.0
