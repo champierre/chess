@@ -448,7 +448,7 @@ function App() {
                         setSelectedGame(game);
                       }}
                       className={`w-full px-4 py-3 text-left flex flex-col gap-2 transition-colors duration-200 ${
-                        selectedGame === game ? "bg-blue-50 border-l-4 border-blue-500" : "hover:bg-gray-50 border-l-4 border-transparent"
+                        selectedGame === game ? "bg-blue-100" : "hover:bg-gray-50"
                       }`}
                     >
                       <div className="flex items-center justify-between">
@@ -625,6 +625,11 @@ function App() {
             )}
             <div ref={containerRef} className="mb-4" />
             <div className="flex justify-center gap-4">
+              {isEvaluating && (
+                <div data-testid="evaluation-status" className="text-gray-500">
+                  評価中...
+                </div>
+              )}
               <button 
                 onClick={prevMove}
                 className="bg-gray-100 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-200 transition-colors duration-200 flex items-center gap-1"
@@ -654,17 +659,20 @@ function App() {
               >
                 <FontAwesomeIcon icon={faArrowsUpDown} />
               </button>
-              <div className="flex items-center">
-                <div data-testid="evaluation-status" className="text-gray-500">
-                  {isEvaluating ? '評価中...' : ''}
+              {selectedGame && selectedGame.gameType && (
+                <div className="flex items-center gap-2">
+                  <span data-testid="game-type" className="text-sm text-gray-600">
+                    ゲームタイプ: {selectedGame.gameType}
+                  </span>
+                  <span className="text-lg">{getGameTypeIcon(selectedGame.gameType)}</span>
                 </div>
-                {!isEvaluating && currentMoveIsBest && currentMove > 0 && (
-                  <div className="text-green-600 font-medium flex items-center gap-1" title="最善手です" data-testid="best-move-indicator">
-                    <FontAwesomeIcon icon={faCheck} />
-                    <span>最善手</span>
-                  </div>
-                )}
-              </div>
+              )}
+              {!isEvaluating && currentMoveIsBest && currentMove > 0 && (
+                <div className="text-green-600 font-medium flex items-center gap-1" title="最善手です" data-testid="best-move-indicator">
+                  <FontAwesomeIcon icon={faCheck} />
+                  <span>最善手</span>
+                </div>
+              )}
             </div>
           </div>
         </div>
