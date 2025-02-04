@@ -12,7 +12,12 @@ interface VitestConfigExport extends UserConfig {
 
 export default defineConfig({
   base: '/chess/',
-  plugins: [react(), commonjs()],
+  plugins: [
+    react({
+      jsxRuntime: 'classic'
+    }), 
+    commonjs()
+  ],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
