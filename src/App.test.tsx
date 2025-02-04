@@ -58,17 +58,15 @@ describe('Stockfish integration', () => {
 
     // 次の手ボタンをクリック
     const nextButton = screen.getByLabelText('次の手');
-    await act(async () => {
-      fireEvent.click(nextButton);
-      // 評価中の表示を確認
-      await waitFor(() => {
-        expect(screen.getByTestId('evaluating')).toBeInTheDocument();
-      });
-      // 評価が完了するまで待機
-      await waitFor(() => {
-        expect(mockEvaluatePosition).toHaveBeenCalled();
-      }, { timeout: 2000 });
+    fireEvent.click(nextButton);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('evaluating')).toBeInTheDocument();
     });
+
+    await waitFor(() => {
+      expect(mockEvaluatePosition).toHaveBeenCalled();
+    }, { timeout: 2000 });
 
     // 最善手の表示を確認
     await waitFor(() => {
@@ -92,12 +90,16 @@ describe('Stockfish integration', () => {
     await act(async () => {
       fireEvent.click(nextButton);
       await waitFor(() => {
+        expect(screen.getByTestId('evaluating')).toBeInTheDocument();
+      });
+      await waitFor(() => {
         expect(mockEvaluatePosition).toHaveBeenCalledTimes(1);
       }, { timeout: 2000 });
-    });
 
-    await act(async () => {
       fireEvent.click(nextButton);
+      await waitFor(() => {
+        expect(screen.getByTestId('evaluating')).toBeInTheDocument();
+      });
       await waitFor(() => {
         expect(mockEvaluatePosition).toHaveBeenCalledTimes(2);
       }, { timeout: 2000 });

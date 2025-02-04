@@ -575,13 +575,15 @@ function App() {
               >
                 <FontAwesomeIcon icon={faArrowsUpDown} />
               </button>
-              {isEvaluating ? (
-                <span className="text-gray-500 flex items-center" data-testid="evaluating">評価中...</span>
-              ) : currentMoveIsBest && currentMove > 0 ? (
-                <div className="flex items-center text-green-500" title="最善手です" data-testid="best-move-indicator">
-                  <FontAwesomeIcon icon={faCheck} />
-                </div>
-              ) : null}
+              <div className="flex items-center">
+                {isEvaluating ? (
+                  <span className="text-gray-500" data-testid="evaluating">評価中...</span>
+                ) : currentMoveIsBest && currentMove > 0 ? (
+                  <div className="text-green-500" title="最善手です" data-testid="best-move-indicator">
+                    <FontAwesomeIcon icon={faCheck} />
+                  </div>
+                ) : null}
+              </div>
             </div>
           </div>
         </div>
