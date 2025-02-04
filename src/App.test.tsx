@@ -4,6 +4,12 @@ import { vi } from 'vitest';
 import App from './App';
 import { StockfishService } from './services/stockfish';
 
+// Chessboardのモック
+vi.stubGlobal('Chessboard', () => ({
+  position: vi.fn(),
+  destroy: vi.fn()
+}));
+
 vi.mock('./services/stockfish', () => ({
   StockfishService: vi.fn().mockImplementation(() => ({
     evaluatePosition: vi.fn().mockResolvedValue({ bestMove: 'e2e4', score: 0.5 }),
