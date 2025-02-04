@@ -2,7 +2,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, test, expect, beforeEach } from 'vitest';
 import { vi, Mock } from 'vitest';
 import App from './App';
-import { mutableBoardRef } from './App';
+// Remove mutableBoardRef import as it's no longer exported
 import { StockfishService } from './services/stockfish';
 
 interface ChessboardConfig {
@@ -14,6 +14,7 @@ interface ChessboardConfig {
 // Chessboardのモック
 const mockPosition = vi.fn();
 const mockDestroy = vi.fn();
+const mockEvaluatePosition = vi.fn().mockResolvedValue({ bestMove: 'e2e4', score: 0.5 });
 
 vi.stubGlobal('Chessboard', (_container: HTMLElement, config: ChessboardConfig) => {
   const instance = {
@@ -21,6 +22,8 @@ vi.stubGlobal('Chessboard', (_container: HTMLElement, config: ChessboardConfig) 
     destroy: mockDestroy,
     ...config
   };
+  // グローバルなChessboardインスタンスを設定
+  (window as any).chessboard = instance;
   return instance;
 });
 
@@ -30,9 +33,6 @@ beforeEach(() => {
   mockDestroy.mockClear();
   mockEvaluatePosition.mockClear();
 });
-
-const mockEvaluatePosition = vi.fn().mockResolvedValue({ bestMove: 'e2e4', score: 0.5 });
-const mockDestroy = vi.fn();
 
 vi.mock('./services/stockfish', () => ({
   StockfishService: vi.fn().mockImplementation(() => ({
@@ -63,7 +63,7 @@ describe('Stockfish integration', () => {
 
     // 評価中の表示を確認
     await waitFor(() => {
-      expect(screen.getByText('評価中...')).toBeInTheDocument();
+      expect(screen.getByTestId('evaluating')).toBeInTheDocument();
     }, { timeout: 1000 });
 
     // 最善手の表示を確認（非同期処理の完了を待つ）

@@ -120,8 +120,8 @@ function App() {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const stockfishRef = useRef<StockfishService | null>(null);
 
-  // Ensure refs are mutable and export for testing
-  export const mutableBoardRef = boardRef as React.MutableRefObject<ChessBoard | null>;
+  // Ensure refs are mutable
+  const mutableBoardRef = boardRef as React.MutableRefObject<ChessBoard | null>;
   const mutableGameRef = gameRef as React.MutableRefObject<Chess | null>;
   
   const itemsPerPage = 10;
@@ -302,24 +302,31 @@ function App() {
   };
 
   const nextMove = async () => {
-    if (mutableGameRef.current && currentMove < mutableGameRef.current.history().length && mutableBoardRef.current) {
+    if (mutableGameRef.current && currentMove < mutableGameRef.current.history().length) {
       const moves = mutableGameRef.current.history({ verbose: true }) as ChessMove[];
       const move = moves[currentMove];
       if (move) {
-        mutableBoardRef.current.position(move.after);
-        setCurrentMove(prev => prev + 1);
-        await evaluateCurrentPosition();
+        // グローバルなChessboardインスタンスを使用
+        const chessboard = (window as any).chessboard;
+        if (chessboard && typeof chessboard.position === 'function') {
+          chessboard.position(move.after);
+          setCurrentMove(prev => prev + 1);
+          await evaluateCurrentPosition();
+        }
       }
     }
   };
 
   const prevMove = async () => {
-    if (mutableGameRef.current && currentMove > 0 && mutableBoardRef.current) {
+    if (mutableGameRef.current && currentMove > 0) {
       const moves = mutableGameRef.current.history({ verbose: true }) as ChessMove[];
       const move = moves[currentMove - 2];
-      mutableBoardRef.current.position(move ? move.after : 'start');
-      setCurrentMove(prev => prev - 1);
-      await evaluateCurrentPosition();
+      const chessboard = (window as any).chessboard;
+      if (chessboard && typeof chessboard.position === 'function') {
+        chessboard.position(move ? move.after : 'start');
+        setCurrentMove(prev => prev - 1);
+        await evaluateCurrentPosition();
+      }
     }
   };
 
