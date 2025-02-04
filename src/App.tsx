@@ -597,7 +597,7 @@ function App() {
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
                         <p className="text-gray-600">日付</p>
-                        <p data-testid="game-date" className="font-medium">{selectedGame.date}</p>
+                        <p data-testid="game-date" className="font-medium" aria-label={`日付: ${selectedGame.date}`}>{selectedGame.date}</p>
                       </div>
                       <div className="flex items-center justify-between">
                         <p className="text-gray-600">評価状態</p>
