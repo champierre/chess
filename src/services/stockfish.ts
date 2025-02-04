@@ -26,9 +26,8 @@ export class StockfishService {
 
   private initializeWorker() {
     try {
-      const workerUrl = new URL('/chess/stockfish.js', window.location.origin);
+      const workerUrl = new URL('/stockfish.js', window.location.origin);
       this.worker = new Worker(workerUrl.toString(), {
-        type: 'module',
         name: 'stockfish-worker'
       });
       this.worker.onmessage = this.handleMessage.bind(this);
