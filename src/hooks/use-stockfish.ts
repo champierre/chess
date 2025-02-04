@@ -12,20 +12,24 @@ export function useStockfish() {
   const workerRef = useRef<Worker | null>(null);
 
   useEffect(() => {
-    try {
-      const worker = new Worker('/chess/stockfish.js');
-      workerRef.current = worker;
-      setStockfish(worker);
-      
-      worker.addEventListener('message', (e) => {
-        console.log('Stockfish:', e.data);
-      });
-      
-      worker.postMessage('uci');
-      worker.postMessage('setoption name MultiPV value 1');
-    } catch (error) {
-      console.error('Failed to initialize Stockfish worker:', error);
-    }
+    const initWorker = async () => {
+      try {
+        const worker = new Worker('/chess/stockfish.js');
+        workerRef.current = worker;
+        setStockfish(worker);
+        
+        worker.addEventListener('message', (e) => {
+          console.log('Stockfish:', e.data);
+        });
+        
+        worker.postMessage('uci');
+        worker.postMessage('setoption name MultiPV value 1');
+      } catch (error) {
+        console.error('Failed to initialize Stockfish worker:', error);
+      }
+    };
+
+    initWorker();
 
     return () => {
       if (workerRef.current) {
@@ -34,19 +38,22 @@ export function useStockfish() {
     };
   }, []);
 
-  const evaluatePosition = async (game: Chess): Promise<StockfishEvaluation> => {
+  const evaluatePosition = async (game: Chess): Promise<StockfishEvaluation | null> => {
     return new Promise((resolve) => {
-      if (!stockfish) return;
+      if (!stockfish) {
+        resolve(null);
+        return;
+      }
       
       const fen = game.fen();
       if (evaluationCache.current.has(fen)) {
         return resolve(evaluationCache.current.get(fen)!);
       }
 
-      const messageHandler = (message: string) => {
-        if (message.includes('bestmove')) {
-          const bestMove = message.split(' ')[1];
-          const scoreMatch = message.match(/score cp (-?\d+)/);
+      const messageHandler = (e: { data: string }) => {
+        if (e.data.includes('bestmove')) {
+          const bestMove = e.data.split(' ')[1];
+          const scoreMatch = e.data.match(/score cp (-?\d+)/);
           const score = scoreMatch ? parseInt(scoreMatch[1]) : 0;
           
           const evaluation = { bestMove, score };
