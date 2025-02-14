@@ -181,6 +181,128 @@ describe('ゲームタイプアイコンのテスト', () => {
   })
 })
 
+describe('Lichess統合のテスト', () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    vi.setSystemTime(new Date('2024-01-15'));
+
+    // APIレスポンスをモック
+    vi.spyOn(global, 'fetch').mockImplementation((input: RequestInfo | URL) => {
+      const url = typeof input === 'string' ? input : input.toString();
+      
+      // Chess.com API mocks
+      if (url.includes('api.chess.com')) {
+        if (url.includes('/archives')) {
+          return Promise.resolve({
+            json: () => Promise.resolve({ archives: ['https://api.chess.com/pub/player/test/games/2024/01'] })
+          } as Response);
+        }
+        if (url.includes('/pgn')) {
+          return Promise.resolve({
+            text: () => Promise.resolve(mockGames.map(game => game.pgn).join('\n\n'))
+          } as Response);
+        }
+      }
+      
+      // Lichess API mocks
+      if (url.includes('lichess.org/api/games/user')) {
+        const lichessPgn = `[Event "Lichess Bullet"]
+[Site "https://lichess.org"]
+[Date "2024.01.15"]
+[White "LichessPlayer1"]
+[Black "LichessPlayer2"]
+[Result "1-0"]
+[TimeControl "60+0"]
+
+1. e4 e5 *`;
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          text: () => Promise.resolve(lichessPgn)
+        } as Response);
+      }
+      
+      return Promise.reject(new Error('Not found'));
+    });
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.useRealTimers();
+  });
+
+  it('Lichessユーザー名を入力してゲームを取得できることを確認', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    const lichessInput = screen.getByPlaceholderText('Lichess ユーザー名');
+    await user.type(lichessInput, 'test_user');
+    
+    const fetchButton = screen.getByRole('button', { name: '取得' });
+    await user.click(fetchButton);
+
+    // Verify games are fetched and displayed
+    const games = await screen.findAllByRole('button', { name: /2024/ });
+    expect(games.length).toBeGreaterThan(0);
+    
+    // Verify Lichess game info is displayed
+    const lichessGame = screen.getByText(/LichessPlayer1 vs LichessPlayer2/);
+    expect(lichessGame).toBeInTheDocument();
+  });
+
+  it('両方のプラットフォームからゲームを取得できることを確認', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    const chesscomInput = screen.getByPlaceholderText('Chess.com ユーザー名');
+    const lichessInput = screen.getByPlaceholderText('Lichess ユーザー名');
+    
+    await user.type(chesscomInput, 'test_user1');
+    await user.type(lichessInput, 'test_user2');
+    
+    const fetchButton = screen.getByRole('button', { name: '取得' });
+    await user.click(fetchButton);
+
+    // Verify games from both platforms are fetched and displayed
+    const games = await screen.findAllByRole('button', { name: /2024/ });
+    expect(games.length).toBeGreaterThan(0);
+    
+    // Verify games from both platforms are present
+    const chesscomGame = screen.getByText(/Player1 vs Player2/);
+    const lichessGame = screen.getByText(/LichessPlayer1 vs LichessPlayer2/);
+    expect(chesscomGame).toBeInTheDocument();
+    expect(lichessGame).toBeInTheDocument();
+  });
+
+  it('Lichessのレート制限エラーを適切に処理できることを確認', async () => {
+    // Override fetch mock for rate limit test
+    vi.spyOn(global, 'fetch').mockImplementation((input: RequestInfo | URL) => {
+      const url = typeof input === 'string' ? input : input.toString();
+      if (url.includes('lichess.org/api/games/user')) {
+        return Promise.resolve({
+          ok: false,
+          status: 429,
+          statusText: 'Too Many Requests'
+        } as Response);
+      }
+      return Promise.reject(new Error('Not found'));
+    });
+
+    const user = userEvent.setup();
+    render(<App />);
+
+    const lichessInput = screen.getByPlaceholderText('Lichess ユーザー名');
+    await user.type(lichessInput, 'test_user');
+    
+    const fetchButton = screen.getByRole('button', { name: '取得' });
+    await user.click(fetchButton);
+
+    // Verify rate limit error message
+    const errorMessage = await screen.findByText('Lichessのレート制限に達しました');
+    expect(errorMessage).toBeInTheDocument();
+  });
+});
+
 describe('ゲーム選択と情報表示のテスト', () => {
   beforeEach(() => {
     vi.useFakeTimers({ shouldAdvanceTime: true })

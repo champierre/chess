@@ -54,6 +54,7 @@ interface Game {
   result: string;
   timeControl?: string;  // Raw PGN TimeControl value
   gameType?: 'Bullet' | 'Blitz' | 'Rapid' | 'Daily';  // Derived game type
+  source?: 'chess.com' | 'lichess';  // Game source platform
 }
 
 function getGameTypeIcon(gameType: 'Bullet' | 'Blitz' | 'Rapid' | 'Daily'): JSX.Element {
@@ -104,6 +105,7 @@ function getResultIcon(game: Game, currentUser: string) {
 
 function App() {
   const [username, setUsername] = useState('');
+  const [lichessUsername, setLichessUsername] = useState('');
   const [pgn, setPgn] = useState('');
   const [currentMove, setCurrentMove] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -130,15 +132,15 @@ function App() {
     currentPage * itemsPerPage
   );
 
-  // Load saved username from localStorage
+  // Load saved usernames from localStorage
   useEffect(() => {
     try {
-      const savedUsername = localStorage.getItem('chessUsername');
-      if (savedUsername) {
-        setUsername(savedUsername);
-      }
+      const savedChessUsername = localStorage.getItem('chessUsername');
+      const savedLichessUsername = localStorage.getItem('lichessUsername');
+      if (savedChessUsername) setUsername(savedChessUsername);
+      if (savedLichessUsername) setLichessUsername(savedLichessUsername);
     } catch (error) {
-      console.error('Failed to load username from localStorage:', error);
+      console.error('Failed to load usernames from localStorage:', error);
     }
   }, []);
 
@@ -160,92 +162,147 @@ function App() {
   const [loading, setLoading] = useState(false);
 
   const fetchGames = async () => {
-    if (!username) {
+    if (!username && !lichessUsername) {
       setFeedback({ type: 'error', message: 'ユーザー名を入力してください' });
       return;
     }
 
     setLoading(true);
     try {
-      // Get archives first
-      const archivesResponse = await fetch(`https://api.chess.com/pub/player/${username}/games/archives`);
-      const archivesData = await archivesResponse.json();
-      
-      if (!archivesData.archives || archivesData.archives.length === 0) {
-        setFeedback({ type: 'error', message: '対局データが見つかりませんでした' });
-        return;
-      }
-
-      // Save username to localStorage on successful API response
-      try {
-        localStorage.setItem('chessUsername', username);
-      } catch (error) {
-        console.error('Failed to save username to localStorage:', error);
-      }
-
-      // Sort archives in reverse chronological order
-      const sortedArchives = archivesData.archives.sort().reverse();
       const allGames: Game[] = [];
-      
-      console.log(`Found ${sortedArchives.length} archives to process`);
-      
-      // Calculate threshold date (90 days ago)
       const now = new Date();
       const thresholdDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
-      console.log(`Fetching games after ${thresholdDate.toISOString()}`);
       
-      // Process archives to get games from the last 90 days
-      for (const archiveUrl of sortedArchives) {
-        const pgnResponse = await fetch(`${archiveUrl}/pgn`);
-        const pgnText = await pgnResponse.text();
-        
-        // Split PGN text into individual games
-        const games = pgnText.split('\n\n[').map((game, index) => 
-          index === 0 ? game : '[' + game
-        ).filter(game => game.trim());
-        
-        console.log(`Found ${games.length} games in archive ${archiveUrl}`);
-
-        // Parse each game's metadata
-        for (const gamePgn of games) {
-          const dateMatch = gamePgn.match(/\[Date "([^"]+)"/);
-          const whiteMatch = gamePgn.match(/\[White "([^"]+)"/);
-          const blackMatch = gamePgn.match(/\[Black "([^"]+)"/);
-          const resultMatch = gamePgn.match(/\[Result "([^"]+)"/);
-          const timeControlMatch = gamePgn.match(/\[TimeControl "([^"]+)"/);
-
-          if (dateMatch && whiteMatch && blackMatch && resultMatch) {
-            // Check if the game is within the last 90 days
-            const gameDate = new Date(dateMatch[1].replace(/\./g, '-'));
-            console.log(`gameDate: ${dateMatch[1]}`);
-            if (gameDate < thresholdDate) {
-              // Skip games older than 90 days
-              continue;
-            }
-            
-            // Only add games within the last 90 days
-            allGames.push({
-              date: dateMatch[1],
-              white: whiteMatch[1],
-              black: blackMatch[1],
-              pgn: gamePgn,
-              result: resultMatch[1],
-              timeControl: timeControlMatch ? timeControlMatch[1] : undefined,
-              gameType: deriveGameType(timeControlMatch ? timeControlMatch[1] : undefined)
-            });
+      // Fetch chess.com games if username provided
+      if (username) {
+        try {
+          const archivesResponse = await fetch(`https://api.chess.com/pub/player/${username}/games/archives`);
+          const archivesData = await archivesResponse.json();
+          
+          if (!archivesData.archives || archivesData.archives.length === 0) {
+            setFeedback({ type: 'error', message: 'Chess.comの対局データが見つかりませんでした' });
+            return;
           }
+
+          // Save username to localStorage on successful API response
+          try {
+            localStorage.setItem('chessUsername', username);
+          } catch (error) {
+            console.error('Failed to save Chess.com username to localStorage:', error);
+          }
+
+          // Sort archives in reverse chronological order
+          const sortedArchives = archivesData.archives.sort().reverse();
+          console.log(`Found ${sortedArchives.length} Chess.com archives to process`);
+          
+          // Process archives to get games from the last 90 days
+          for (const archiveUrl of sortedArchives) {
+            const pgnResponse = await fetch(`${archiveUrl}/pgn`);
+            const pgnText = await pgnResponse.text();
+            
+            // Split PGN text into individual games
+            const games = pgnText.split('\n\n[').map((game, index) => 
+              index === 0 ? game : '[' + game
+            ).filter(game => game.trim());
+            
+            // Parse each game's metadata
+            for (const gamePgn of games) {
+              const dateMatch = gamePgn.match(/\[Date "([^"]+)"/);
+              const whiteMatch = gamePgn.match(/\[White "([^"]+)"/);
+              const blackMatch = gamePgn.match(/\[Black "([^"]+)"/);
+              const resultMatch = gamePgn.match(/\[Result "([^"]+)"/);
+              const timeControlMatch = gamePgn.match(/\[TimeControl "([^"]+)"/);
+
+              if (dateMatch && whiteMatch && blackMatch && resultMatch) {
+                const gameDate = new Date(dateMatch[1].replace(/\./g, '-'));
+                if (gameDate >= thresholdDate) {
+                  allGames.push({
+                    date: dateMatch[1],
+                    white: whiteMatch[1],
+                    black: blackMatch[1],
+                    pgn: gamePgn,
+                    result: resultMatch[1],
+                    timeControl: timeControlMatch ? timeControlMatch[1] : undefined,
+                    gameType: deriveGameType(timeControlMatch ? timeControlMatch[1] : undefined),
+                    source: 'chess.com'
+                  });
+                }
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching Chess.com games:', error);
+          setFeedback({ type: 'error', message: 'Chess.comの対局データの取得に失敗しました' });
+        }
+      }
+      
+      // Fetch Lichess games if username provided
+      if (lichessUsername) {
+        try {
+          localStorage.setItem('lichessUsername', lichessUsername);
+        } catch (error) {
+          console.error('Failed to save Lichess username to localStorage:', error);
+        }
+
+        try {
+          const lichessResponse = await fetch(
+            `https://lichess.org/api/games/user/${lichessUsername}?max=100&perfType=ultraBullet,bullet,blitz,rapid,classical`
+          );
+          
+          if (lichessResponse.status === 429) {
+            setFeedback({ type: 'error', message: 'Lichessのレート制限に達しました' });
+            return;
+          }
+
+          if (!lichessResponse.ok) {
+            setFeedback({ type: 'error', message: 'Lichessの対局データが見つかりませんでした' });
+            return;
+          }
+
+          const lichessGames = await lichessResponse.text();
+          const games = lichessGames.split('\n\n').filter(game => game.trim());
+          
+          for (const gamePgn of games) {
+            const dateMatch = gamePgn.match(/\[Date "([^"]+)"/);
+            const whiteMatch = gamePgn.match(/\[White "([^"]+)"/);
+            const blackMatch = gamePgn.match(/\[Black "([^"]+)"/);
+            const resultMatch = gamePgn.match(/\[Result "([^"]+)"/);
+            const timeControlMatch = gamePgn.match(/\[TimeControl "([^"]+)"/);
+
+            if (dateMatch && whiteMatch && blackMatch && resultMatch) {
+              const gameDate = new Date(dateMatch[1]);
+              if (gameDate >= thresholdDate) {
+                allGames.push({
+                  date: dateMatch[1],
+                  white: whiteMatch[1],
+                  black: blackMatch[1],
+                  pgn: gamePgn,
+                  result: resultMatch[1],
+                  timeControl: timeControlMatch ? timeControlMatch[1] : undefined,
+                  gameType: deriveGameType(timeControlMatch ? timeControlMatch[1] : undefined),
+                  source: 'lichess'
+                });
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching Lichess games:', error);
+          setFeedback({ type: 'error', message: 'Lichessの対局データの取得に失敗しました' });
         }
       }
 
-      console.log(`Total games collected before sorting: ${allGames.length}`);
-      
-      // Sort games by date in reverse chronological order and take up to 100
+      // Sort all games by date
       const sortedGames = allGames.sort((a, b) => {
         return new Date(b.date.replace(/\./g, '-')).getTime() - new Date(a.date.replace(/\./g, '-')).getTime();
       });
       
+      if (sortedGames.length === 0) {
+        setFeedback({ type: 'error', message: '過去90日間の対局データが見つかりませんでした' });
+        return;
+      }
+      
       setGames(sortedGames);
-      setCurrentPage(1); // Reset to first page when new games are fetched
+      setCurrentPage(1);
       setFeedback({ type: 'success', message: `過去90日間の対局を${sortedGames.length}件取得しました` });
     } catch (error) {
       console.error('Error fetching games:', error);
@@ -298,15 +355,27 @@ function App() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <div className="mb-4">
-              <div className="flex gap-2">
-                <input
-                  id="username"
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Chess.com ユーザー名"
-                  className="flex-1 p-2 border rounded"
-                />
+              <div className="flex gap-2 flex-col sm:flex-row">
+                <div className="flex gap-2 flex-1">
+                  <input
+                    id="username"
+                    type="text"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    placeholder="Chess.com ユーザー名"
+                    className="flex-1 p-2 border rounded"
+                  />
+                </div>
+                <div className="flex gap-2 flex-1">
+                  <input
+                    id="lichessUsername"
+                    type="text"
+                    value={lichessUsername}
+                    onChange={(e) => setLichessUsername(e.target.value)}
+                    placeholder="Lichess ユーザー名"
+                    className="flex-1 p-2 border rounded"
+                  />
+                </div>
                 <button
                   onClick={fetchGames}
                   disabled={loading}
