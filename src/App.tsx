@@ -104,6 +104,7 @@ function getResultIcon(game: Game, currentUser: string) {
 
 function App() {
   const [username, setUsername] = useState('');
+  const [lichessUsername, setLichessUsername] = useState('');
   const [pgn, setPgn] = useState('');
   const [currentMove, setCurrentMove] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -130,15 +131,19 @@ function App() {
     currentPage * itemsPerPage
   );
 
-  // Load saved username from localStorage
+  // Load saved usernames from localStorage
   useEffect(() => {
     try {
-      const savedUsername = localStorage.getItem('chessUsername');
-      if (savedUsername) {
-        setUsername(savedUsername);
+      const savedChessUsername = localStorage.getItem('chessUsername');
+      const savedLichessUsername = localStorage.getItem('lichessUsername');
+      if (savedChessUsername) {
+        setUsername(savedChessUsername);
+      }
+      if (savedLichessUsername) {
+        setLichessUsername(savedLichessUsername);
       }
     } catch (error) {
-      console.error('Failed to load username from localStorage:', error);
+      console.error('Failed to load usernames from localStorage:', error);
     }
   }, []);
 
@@ -176,11 +181,12 @@ function App() {
         return;
       }
 
-      // Save username to localStorage on successful API response
+      // Save usernames to localStorage on successful API response
       try {
         localStorage.setItem('chessUsername', username);
+        localStorage.setItem('lichessUsername', lichessUsername);
       } catch (error) {
-        console.error('Failed to save username to localStorage:', error);
+        console.error('Failed to save usernames to localStorage:', error);
       }
 
       // Sort archives in reverse chronological order
@@ -299,14 +305,33 @@ function App() {
           <div>
             <div className="mb-4">
               <div className="flex gap-2">
-                <input
-                  id="username"
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Chess.com ユーザー名"
-                  className="flex-1 p-2 border rounded"
-                />
+                <div className="flex-1">
+                  <input
+                    id="chesscom-username"
+                    type="text"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    placeholder="Chess.com ユーザー名"
+                    className="w-full p-2 border rounded"
+                  />
+                </div>
+                <div className="flex-1">
+                  <input
+                    id="lichess-username"
+                    type="text"
+                    value={lichessUsername}
+                    onChange={(e) => {
+                      setLichessUsername(e.target.value);
+                      try {
+                        localStorage.setItem('lichessUsername', e.target.value);
+                      } catch (error) {
+                        console.error('Failed to save Lichess username:', error);
+                      }
+                    }}
+                    placeholder="Lichess ユーザー名"
+                    className="w-full p-2 border rounded"
+                  />
+                </div>
                 <button
                   onClick={fetchGames}
                   disabled={loading}
