@@ -103,7 +103,8 @@ function getResultIcon(game: Game, currentUser: string) {
 }
 
 function App() {
-  const [username, setUsername] = useState('');
+  const [chessComUsername, setChessComUsername] = useState('');
+  const [lichessUsername, setLichessUsername] = useState('');
   const [pgn, setPgn] = useState('');
   const [currentMove, setCurrentMove] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -130,15 +131,19 @@ function App() {
     currentPage * itemsPerPage
   );
 
-  // Load saved username from localStorage
+  // Load saved usernames from localStorage
   useEffect(() => {
     try {
-      const savedUsername = localStorage.getItem('chessUsername');
-      if (savedUsername) {
-        setUsername(savedUsername);
+      const savedChessComUsername = localStorage.getItem('chessUsername');
+      const savedLichessUsername = localStorage.getItem('lichessUsername');
+      if (savedChessComUsername) {
+        setChessComUsername(savedChessComUsername);
+      }
+      if (savedLichessUsername) {
+        setLichessUsername(savedLichessUsername);
       }
     } catch (error) {
-      console.error('Failed to load username from localStorage:', error);
+      console.error('Failed to load usernames from localStorage:', error);
     }
   }, []);
 
@@ -160,15 +165,15 @@ function App() {
   const [loading, setLoading] = useState(false);
 
   const fetchGames = async () => {
-    if (!username) {
-      setFeedback({ type: 'error', message: 'ユーザー名を入力してください' });
+    if (!chessComUsername) {
+      setFeedback({ type: 'error', message: 'Chess.com ユーザー名を入力してください' });
       return;
     }
 
     setLoading(true);
     try {
       // Get archives first
-      const archivesResponse = await fetch(`https://api.chess.com/pub/player/${username}/games/archives`);
+      const archivesResponse = await fetch(`https://api.chess.com/pub/player/${chessComUsername}/games/archives`);
       const archivesData = await archivesResponse.json();
       
       if (!archivesData.archives || archivesData.archives.length === 0) {
@@ -178,9 +183,9 @@ function App() {
 
       // Save username to localStorage on successful API response
       try {
-        localStorage.setItem('chessUsername', username);
+        localStorage.setItem('chessUsername', chessComUsername);
       } catch (error) {
-        console.error('Failed to save username to localStorage:', error);
+        console.error('Failed to save Chess.com username to localStorage:', error);
       }
 
       // Sort archives in reverse chronological order
@@ -298,22 +303,46 @@ function App() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <div className="mb-4">
-              <div className="flex gap-2">
+              <div className="flex flex-col gap-2">
+                <div className="flex gap-2">
+                  <input
+                    id="chesscom-username"
+                    type="text"
+                    value={chessComUsername}
+                    onChange={(e) => {
+                      setChessComUsername(e.target.value);
+                      try {
+                        localStorage.setItem('chessUsername', e.target.value);
+                      } catch (error) {
+                        console.error('Failed to save Chess.com username:', error);
+                      }
+                    }}
+                    placeholder="Chess.com ユーザー名"
+                    className="flex-1 p-2 border rounded"
+                  />
+                  <button
+                    onClick={fetchGames}
+                    disabled={loading}
+                    className={`px-4 py-2 rounded text-white ${loading ? 'bg-gray-400' : 'bg-blue-500 hover:bg-blue-600'}`}
+                  >
+                    {loading ? '取得中...' : '取得'}
+                  </button>
+                </div>
                 <input
-                  id="username"
+                  id="lichess-username"
                   type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Chess.com ユーザー名"
+                  value={lichessUsername}
+                  onChange={(e) => {
+                    setLichessUsername(e.target.value);
+                    try {
+                      localStorage.setItem('lichessUsername', e.target.value);
+                    } catch (error) {
+                      console.error('Failed to save Lichess username:', error);
+                    }
+                  }}
+                  placeholder="Lichess ユーザー名"
                   className="flex-1 p-2 border rounded"
                 />
-                <button
-                  onClick={fetchGames}
-                  disabled={loading}
-                  className={`px-4 py-2 rounded text-white ${loading ? 'bg-gray-400' : 'bg-blue-500 hover:bg-blue-600'}`}
-                >
-                  {loading ? '取得中...' : '取得'}
-                </button>
               </div>
             </div>
             {games.length > 0 ? (
@@ -372,7 +401,7 @@ function App() {
                       }`}
                     >
                       <span className="font-medium">
-                        {game.date} {getResultIcon(game, username)}
+                        {game.date} {getResultIcon(game, chessComUsername)}
                         {game.gameType && (
                           <span className="ml-2">{getGameTypeIcon(game.gameType)}</span>
                         )}
