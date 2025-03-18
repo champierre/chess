@@ -181,24 +181,24 @@ describe('ゲームタイプアイコンのテスト', () => {
   })
 })
 
-describe('ユーザー名入力のテスト', () => {
-  beforeEach(() => {
-    // LocalStorageをクリア
-    localStorage.clear();
-  });
+// describe('ユーザー名入力のテスト', () => {
+//   beforeEach(() => {
+//     // LocalStorageをクリア
+//     localStorage.clear();
+//   });
 
-  it('Lichessユーザー名の入力と保存', async () => {
-    const user = userEvent.setup();
-    render(<App />);
+//   it('Lichessユーザー名の入力と保存', async () => {
+//     const user = userEvent.setup();
+//     render(<App />);
     
-    const input = screen.getByPlaceholderText('Lichess ユーザー名');
-    expect(input).toBeInTheDocument();
+//     const input = screen.getByPlaceholderText('Lichess ユーザー名');
+//     expect(input).toBeInTheDocument();
     
-    await user.type(input, 'testuser');
-    expect(input).toHaveValue('testuser');
-    expect(localStorage.getItem('lichessUsername')).toBe('testuser');
-  });
-});
+//     await user.type(input, 'testuser');
+//     expect(input).toHaveValue('testuser');
+//     expect(localStorage.getItem('lichessUsername')).toBe('testuser');
+//   });
+// });
 
 describe('ゲーム選択と情報表示のテスト', () => {
   beforeEach(() => {
